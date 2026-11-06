@@ -47,7 +47,19 @@ jobs:
           repository: libsdl-org/SDL_mixer
           ref: release-2.8.1
           path: vendor/SDL2_mixer
-          submodules: recursive
+
+      - name: Populate SDL_mixer vendored codec projects
+        working-directory: vendor/SDL2_mixer
+        run: |
+          rm -rf \
+            external/flac external/ogg external/vorbis external/opus \
+            external/opusfile external/tremor external/mpg123 \
+            external/libxmp external/wavpack external/libgme
+          sh external/download.sh --depth 1
+          test -f external/ogg/CMakeLists.txt
+          test -f external/flac/CMakeLists.txt
+          test -f external/opus/CMakeLists.txt
+          test -f external/libxmp/CMakeLists.txt
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -64,7 +76,7 @@ jobs:
             "platforms;android-35" \
             "build-tools;35.0.0" \
             "ndk;28.2.13676358" \
-            "cmake;3.22.1"
+            "cmake;3.28.1"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358" >> "$GITHUB_ENV"
           test -x "$ANDROID_SDK_ROOT/ndk/28.2.13676358/ndk-build"
 
