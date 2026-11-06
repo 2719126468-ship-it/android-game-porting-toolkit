@@ -30,6 +30,7 @@
 - [ ] Test touch/input, audio, saves, rendering, and performance on real hardware\n- [x] Build and publish an original, license-clear SDL2 Android sample APK through CI artifacts and tag-triggered Releases
 
 ## v0.4.x — AI-assisted port workflow
+- [ ] End-to-end Android port validation against pinned C-Dogs SDL 2.5.0 source (see docs/testing/cdogs-sdl-2.5.0.md)
 - [x] Deterministic plan-only task graph with dependencies, acceptance criteria, proposed capabilities, and approval gates
 - [ ] Agent task graph executor with bounded permissions
 - [x] Read-only unified-diff patch proposals with source hashes, evidence, bounded text input, and traversal/symlink protection\n- [ ] Human approval and controlled patch application
