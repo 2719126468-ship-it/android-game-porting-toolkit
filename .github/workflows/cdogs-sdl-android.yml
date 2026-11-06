@@ -47,6 +47,7 @@ jobs:
           repository: libsdl-org/SDL_mixer
           ref: release-2.8.1
           path: vendor/SDL2_mixer
+          submodules: recursive
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
