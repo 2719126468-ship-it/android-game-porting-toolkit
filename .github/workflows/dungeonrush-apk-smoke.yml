@@ -1,0 +1,103 @@
+name: DungeonRush APK packaging smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assemble-debug-apk:
+    name: Assemble reference Android APK (no redistribution)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout pinned DungeonRush Android reference
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: imrunning/DungeonRush_Android
+          ref: c3f673683d956abd80abf43fc3ad7e4066841466
+          path: vendor/DungeonRush_Android
+
+      - name: Set up JDK 8 for legacy Android Gradle Plugin 3.5
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+
+      - name: Set up Android SDK tools
+        uses: android-actions/setup-android@v4
+
+      - name: Install pinned Android build toolchain
+        run: |
+          sdkmanager --install "platforms;android-28" "build-tools;28.0.3" "ndk;21.4.7075529"
+          test -f "$ANDROID_SDK_ROOT/build-tools/28.0.3/aapt"
+          test -f "$ANDROID_SDK_ROOT/ndk/21.4.7075529/ndk-build"
+
+      - name: Verify legacy project tool versions
+        working-directory: vendor/DungeonRush_Android/DemoGame
+        run: |
+          grep -q 'com.android.tools.build:gradle:3.5.0' build.gradle
+          grep -q 'gradle-5.6-all.zip' gradle/wrapper/gradle-wrapper.properties
+          ./gradlew --version
+
+      - name: Assemble debug APK from source
+        working-directory: vendor/DungeonRush_Android/DemoGame
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_SDK_ROOT }}/ndk/21.4.7075529
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Verify APK manifest and packaged native ABIs
+        working-directory: vendor/DungeonRush_Android/DemoGame
+        env:
+          AAPT: ${{ env.ANDROID_SDK_ROOT }}/build-tools/28.0.3/aapt
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$AAPT" dump badging "$APK" | tee "$RUNNER_TEMP/dungeonrush-apk-badging.txt"
+          unzip -Z1 "$APK" | grep -E '^lib/(arm64-v8a|armeabi-v7a)/.*\.so$' | sort | tee "$RUNNER_TEMP/dungeonrush-apk-libs.txt"
+          grep -q "package: name='org.libsdl.app'" "$RUNNER_TEMP/dungeonrush-apk-badging.txt"
+          grep -q "sdkVersion:'16'" "$RUNNER_TEMP/dungeonrush-apk-badging.txt"
+          grep -q '^lib/arm64-v8a/libmain.so$' "$RUNNER_TEMP/dungeonrush-apk-libs.txt"
+          grep -q '^lib/armeabi-v7a/libmain.so$' "$RUNNER_TEMP/dungeonrush-apk-libs.txt"
+          python - <<'PY'
+          import hashlib, json, os, subprocess, zipfile
+          from pathlib import Path
+          apk = Path("app/build/outputs/apk/debug/app-debug.apk")
+          with zipfile.ZipFile(apk) as archive:
+              libs = [i for i in archive.infolist() if i.filename.endswith(".so")]
+              abis = sorted({i.filename.split("/")[1] for i in libs if i.filename.startswith("lib/")})
+          report = {
+              "status": "apk_assembled_and_manifest_checked",
+              "apk_filename": apk.name,
+              "apk_size_bytes": apk.stat().st_size,
+              "apk_sha256": hashlib.sha256(apk.read_bytes()).hexdigest(),
+              "application_id": "org.libsdl.app",
+              "min_sdk": 16,
+              "native_abis": abis,
+              "native_library_count": len(libs),
+              "distribution": "not uploaded: third-party game asset redistribution rights were not established",
+              "limitations": [
+                  "APK packaging was verified; no emulator/device installation or gameplay test was performed.",
+                  "The upstream reference project is not an AGPT-generated game port."
+              ]
+          }
+          Path(os.environ["RUNNER_TEMP"], "dungeonrush-apk-smoke-report.json").write_text(
+              json.dumps(report, indent=2) + "\n", encoding="utf-8")
+          print(json.dumps(report, indent=2))
+          assert set(abis) == {"arm64-v8a", "armeabi-v7a"}, report
+          assert len(libs) > 0, report
+          PY
+
+      - name: Upload APK packaging verification report only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dungeonrush-apk-packaging-report
+          path: |
+            ${{ runner.temp }}/dungeonrush-apk-smoke-report.json
+            ${{ runner.temp }}/dungeonrush-apk-badging.txt
+            ${{ runner.temp }}/dungeonrush-apk-libs.txt
+          if-no-files-found: warn
