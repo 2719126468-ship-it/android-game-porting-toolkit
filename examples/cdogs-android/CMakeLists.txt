@@ -32,6 +32,9 @@ if(NOT TARGET SDL2_mixer::SDL2_mixer)
     add_library(SDL2_mixer::SDL2_mixer ALIAS SDL2_mixer)
 endif()
 
+# libxmp uses Android's log API on Android builds.
+target_link_libraries(SDL2_mixer PRIVATE log)
+
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(BUILD_EDITOR OFF CACHE BOOL "The desktop OpenGL editor is not part of Android" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "Do not build desktop-oriented tests for Android" FORCE)
