@@ -78,6 +78,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Validate Android preparation script syntax
+        run: python -m py_compile agpt/examples/cdogs-android/prepare_android.py
+
       - name: Install nanopb generator runtime
         run: |
           python -m pip install --upgrade pip
