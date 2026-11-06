@@ -34,6 +34,7 @@ jobs:
       - name: Install pinned Android build toolchain
         run: |
           sdkmanager --install "platforms;android-28" "build-tools;28.0.3" "ndk;21.4.7075529"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/21.4.7075529" >> "$GITHUB_ENV"
           test -f "$ANDROID_SDK_ROOT/build-tools/28.0.3/aapt"
           test -f "$ANDROID_SDK_ROOT/ndk/21.4.7075529/ndk-build"
 
@@ -46,17 +47,14 @@ jobs:
 
       - name: Assemble debug APK from source
         working-directory: vendor/DungeonRush_Android/DemoGame
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_SDK_ROOT }}/ndk/21.4.7075529
         run: |
           chmod +x ./gradlew
           ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
       - name: Verify APK manifest and packaged native ABIs
         working-directory: vendor/DungeonRush_Android/DemoGame
-        env:
-          AAPT: ${{ env.ANDROID_SDK_ROOT }}/build-tools/28.0.3/aapt
         run: |
+          AAPT="$ANDROID_SDK_ROOT/build-tools/28.0.3/aapt"
           APK=app/build/outputs/apk/debug/app-debug.apk
           test -s "$APK"
           "$AAPT" dump badging "$APK" | tee "$RUNNER_TEMP/dungeonrush-apk-badging.txt"
