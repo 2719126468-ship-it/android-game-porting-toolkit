@@ -3,9 +3,9 @@ if(TARGET SDL2::SDL2)
     set(SDL2_FOUND TRUE)
     set(SDL2_INCLUDE_DIRS
         "${AGPT_SDL2_SOURCE_DIR}/include"
-        "${SDL2_BINARY_DIR}/include"
-        "${SDL2_BINARY_DIR}/include/SDL2"
-        "${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL2")
+        "${CMAKE_BINARY_DIR}/agpt-sdl2/include"
+        "${CMAKE_BINARY_DIR}/agpt-sdl2/include/SDL2"
+        "${CMAKE_BINARY_DIR}/agpt-sdl2/include-config-$<LOWER_CASE:$<CONFIG>>/SDL2")
     set(SDL2_LIBRARIES SDL2::SDL2)
 else()
     set(SDL2_FOUND FALSE)
