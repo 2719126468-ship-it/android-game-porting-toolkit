@@ -1,23 +1,26 @@
 # Roadmap
 
-## v0.1.0 — Foundation (this release)
+## v0.1.0 — Foundation
 - [x] Portable project manifest and project initialization
 - [x] Read-only directory inventory
-- [x] PE/ELF architecture detection
-- [x] Engine/API evidence heuristics
+- [x] PE/ELF architecture identification
+- [x] Initial engine/API evidence heuristics
 - [x] Explainable native/compatibility/hybrid route scoring
-- [x] Toolchain diagnostics
-- [x] Native Android NDK starter template
-- [x] Compatibility profile template
+- [x] Toolchain diagnostics and starter templates
 - [x] Analyzer plugin entry-point contract
 - [x] Unit tests and GitHub Actions CI
 
-## v0.2.x — Better reconnaissance
-- [ ] Robust PE import-table and ELF dependency extraction
-- [ ] Unity/Unreal/Godot version and packaging analyzers
-- [ ] Archive metadata inspection with size/decompression limits
-- [ ] Evidence confidence calibration using a public test corpus
-- [ ] Machine-readable capability matrix per target device
+## v0.2.0 — Better reconnaissance (implemented)
+- [x] PE import-table extraction with RVA-to-file mapping and bounded reads
+- [x] ELF PT_DYNAMIC / DT_NEEDED dependency extraction
+- [x] Unity version/package metadata probes
+- [x] Unreal Build.version, PAK footer, and IoStore layout probes
+- [x] Godot PCK engine/pack version probe
+- [x] ZIP central-directory metadata inspection without extraction
+- [x] Synthetic binary/package fixtures and malformed-input tests
+- [ ] Public real-game sample corpus with licensing review
+- [ ] Confidence calibration against labeled real-game observations
+- [ ] Machine-readable target-device capability matrix
 
 ## v0.3.x — Reproducible adapters
 - [ ] Optional Ghidra headless adapter (user-installed Ghidra only)
