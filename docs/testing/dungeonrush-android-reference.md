@@ -32,7 +32,7 @@ The workflow writes the selected NDK path to the reference project's `local.prop
 
 ## Build result
 
-<badge>Success</badge> The `:app:assembleDebug` task and post-build APK validation both completed successfully.
+**Build result: SUCCESS.** The `:app:assembleDebug` task and post-build APK validation both completed successfully.
 
 | Item | Verified result |
 |---|---|
