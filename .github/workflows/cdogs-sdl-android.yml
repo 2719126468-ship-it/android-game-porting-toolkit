@@ -76,7 +76,7 @@ jobs:
             "platforms;android-35" \
             "build-tools;35.0.0" \
             "ndk;28.2.13676358" \
-            "cmake;3.25.1"
+            "cmake;3.22.1"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358" >> "$GITHUB_ENV"
           test -x "$ANDROID_SDK_ROOT/ndk/28.2.13676358/ndk-build"
 
@@ -122,6 +122,7 @@ jobs:
           grep -F 'SDL2_mixer' app/src/main/java/com/agpt/cdogs/CdogsActivity.java
           grep -F 'set_target_properties(cdogs-sdl PROPERTIES OUTPUT_NAME main)' "$AGPT_CDOGS_SOURCE_DIR/src/CMakeLists.txt"
           grep -F 'add_library(cdogs-sdl SHARED' "$AGPT_CDOGS_SOURCE_DIR/src/CMakeLists.txt"
+          grep -F 'cmake_minimum_required(VERSION 3.22)' "$AGPT_CDOGS_SOURCE_DIR/src/cdogs/enet/CMakeLists.txt"
 
       - name: Build debug APK
         working-directory: build/cdogs-android
