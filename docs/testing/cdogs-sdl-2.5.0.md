@@ -17,6 +17,19 @@ The upstream 2.5.0 CMake project requires SDL2, SDL2_mixer, and Nanopb. The desk
 
 The existing Android repository uses a legacy Ant/ndk-build workflow and old Android toolchain assumptions. Its historical build script should not be executed as-is: it is not a current NDK/Gradle recipe and contains a hard-coded release-signing path. Use it as a source of porting reference only; generate a new debug-signing Android wrapper under AGPT control.
 
+## Verified source-level Android blockers
+
+These are confirmed from the pinned 2.5.0 source tree, not guesses about the old Android fork:
+
+1. **SDL entry point:** `src/cdogs.c` defines `SDL_MAIN_HANDLED` before including SDL and then declares a normal `main()`. The SDL Android activity expects the SDL application entry point in the native library. The Android build must make the SDL entry-point mapping explicit rather than blindly retaining the desktop-only define.
+2. **Native packaging target:** `src/CMakeLists.txt` currently creates `cdogs-sdl` with `add_executable()`. An SDLActivity-based Android package needs the application code linked into the shared native library loaded by the activity (commonly `libmain.so`), while the regular desktop target must remain unchanged.
+3. **Game data access:** `src/cdogs/utils.c` resolves game data from the process working directory and `CDOGS_DATA_DIR`; C-Dogs opens many assets through ordinary filesystem APIs. APK assets therefore need a first-run deployment strategy into app-private storage, followed by a controlled working-directory/data-root setup before game initialization.
+4. **Config/save location:** `src/cdogs/files.c` derives the config path from `XDG_CONFIG_HOME`, `CDOGS_CONFIG_DIR`, or the home directory and creates the directory tree. Android must direct this to the app's private files area; it must not write game state into shared external storage by default.
+5. **Rendering:** `src/cdogs/window_context.c` requests an accelerated SDL renderer with target-texture support. This needs a real device check, plus a documented fallback/error path if the Android renderer cannot provide the required capability.
+6. **Touch controls:** the core input model includes keyboard and joystick handling. A mobile UI needs an explicit touch-to-game-input bridge; merely packaging SDL does not create usable on-screen controls.
+
+These points define the initial Android adapter patch set. Each patch should be isolated and reviewable, and must preserve the upstream desktop build.
+
 ## Proposed Android integration
 
 1. Pin and analyze the upstream C-Dogs 2.5.0 source tree. Preserve the upstream license files and asset-level attribution.
