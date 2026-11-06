@@ -25,6 +25,12 @@ def score_routes(inventory: GameInventory) -> tuple[list[RouteScore], str, str]:
     if "sdl" in engines:
         scores["native"] += 30
         reasons["native"].append("SDL library marker found; a native Android build path may be feasible if compatible source/engine code is available.")
+    if source_languages.intersection({"c", "c++"}) and build_systems.intersection({"cmake", "ndk-build", "make"}):
+        scores["native"] += 15
+        reasons["native"].append("C/C++ source and a native build configuration were found; test an Android NDK build before considering source-port feasibility established.")
+    if "ndk-build" in build_systems or "android-gradle" in build_systems:
+        scores["native"] += 10
+        reasons["native"].append("An Android-native build project is already present; validate its NDK/ABI/toolchain configuration and touch/input path.")
     if "godot" in engines:
         scores["native"] += 15
         reasons["native"].append("Godot package/runtime marker found; investigate engine version, export templates, and source availability.")
