@@ -103,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(
-                json.dumps(task_plan, ensure_ascii=False, indent=2) + "\\n",
+                json.dumps(task_plan, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
             _print_json({
