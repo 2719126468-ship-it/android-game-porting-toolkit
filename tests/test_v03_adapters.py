@@ -53,8 +53,10 @@ class GhidraAdapterTests(unittest.TestCase):
                 Path(command[index + 2]).write_text(json.dumps(summary), encoding="utf-8")
                 return subprocess.CompletedProcess(command, 0, "ok", "")
 
+            fake_executable = Path(tmp) / "analyzeHeadless"
+            fake_executable.write_text("mock executable", encoding="utf-8")
             with mock.patch.object(ghidra.subprocess, "run", side_effect=fake_run):
-                result = ghidra.analyze_binary(binary, output=output, executable="fake-ghidra")
+                result = ghidra.analyze_binary(binary, output=output, executable=fake_executable)
             data = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(data["analysis"]["program"]["name"], "sample")
             self.assertEqual(result.input_sha256, ghidra._sha256(binary))
@@ -65,9 +67,11 @@ class GhidraAdapterTests(unittest.TestCase):
             binary = Path(tmp) / "sample.exe"
             binary.write_bytes(b"input")
             failed = subprocess.CompletedProcess(["ghidra"], 3, "", "bad import")
+            fake_executable = Path(tmp) / "analyzeHeadless"
+            fake_executable.write_text("mock executable", encoding="utf-8")
             with mock.patch.object(ghidra.subprocess, "run", return_value=failed):
                 with self.assertRaises(ghidra.AdapterError):
-                    ghidra.analyze_binary(binary, executable="fake-ghidra")
+                    ghidra.analyze_binary(binary, executable=fake_executable)
 
 
 class NdkAdapterTests(unittest.TestCase):
