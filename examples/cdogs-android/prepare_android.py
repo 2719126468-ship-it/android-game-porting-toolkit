@@ -22,6 +22,16 @@ def patch_cdogs_source(source: Path) -> None:
     if 'set(VERSION "2.5.0")' not in cmake_root:
         raise SystemExit("Refusing to patch an unexpected C-Dogs source version; expected 2.5.0")
 
+    root_cmake = source / "CMakeLists.txt"
+    replace_once(
+        root_cmake,
+        '\t\tadd_definitions(-Winline -Werror)\n\t\tset(EXTRA_LIBRARIES "m")',
+        '\t\tif(ANDROID)\n\t\t\tadd_definitions(-Winline)\n\t\telse()\n'
+        '\t\t\tadd_definitions(-Winline -Werror)\n\t\tendif()\n'
+        '\t\tset(EXTRA_LIBRARIES "m")',
+        "Android Clang warning policy",
+    )
+
     main_c = source / "src" / "cdogs.c"
     replace_once(
         main_c,
@@ -81,15 +91,15 @@ def patch_cdogs_source(source: Path) -> None:
     replace_once(
         src_cmake,
         "add_executable(cdogs-sdl\n"
-        "\t\${CDOGS_SDL_SOURCES} \${CDOGS_SDL_HEADERS} \${CDOGS_SDL_EXTRA})",
+        "\t${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})",
         "if(ANDROID)\n"
         "\t# SDLActivity loads libmain.so and resolves the SDL_main symbol.\n"
         "\tadd_library(cdogs-sdl SHARED\n"
-        "\t\t\${CDOGS_SDL_SOURCES} \${CDOGS_SDL_HEADERS} \${CDOGS_SDL_EXTRA})\n"
+        "\t\t${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})\n"
         "\tset_target_properties(cdogs-sdl PROPERTIES OUTPUT_NAME main)\n"
         "else()\n"
         "\tadd_executable(cdogs-sdl\n"
-        "\t\t\${CDOGS_SDL_SOURCES} \${CDOGS_SDL_HEADERS} \${CDOGS_SDL_EXTRA})\n"
+        "\t\t${CDOGS_SDL_SOURCES} ${CDOGS_SDL_HEADERS} ${CDOGS_SDL_EXTRA})\n"
         "endif()",
         "Android SDL shared-library target",
     )
