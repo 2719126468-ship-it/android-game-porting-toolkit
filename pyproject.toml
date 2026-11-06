@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "android-game-porting-toolkit"
-version = "0.3.0"
+version = "0.3.1"
 description = "An extensible, evidence-driven toolkit for analyzing and planning PC-to-Android game ports."
 readme = "README.md"
 requires-python = ">=3.10"

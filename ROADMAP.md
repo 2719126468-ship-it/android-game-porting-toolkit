@@ -11,15 +11,22 @@
 - [x] Synthetic and malformed-input tests
 - [ ] Licensed real-game corpus and confidence calibration
 
-## v0.3.0 — Reproducible adapters
+## v0.3.0 — External-tool adapters
 - [x] Optional Ghidra Headless adapter with disposable read-only project
 - [x] Bounded metadata exporter, timeout, input SHA-256 verification
 - [x] Optional Android NDK/CMake native shared-library build adapter
 - [x] Logs, artifact hashes, build provenance, CLI commands
 - [x] Mocked external-process tests
-- [ ] Validate with an installed Ghidra distribution
-- [ ] Validate with a real Android NDK/CMake smoke project
-- [ ] ADB device test protocol
+
+## v0.3.1 — Source-native reconnaissance and real build validation
+- [x] Bounded C/C++ source and build-system metadata probes
+- [x] SDL2 dependency recognition
+- [x] Android.mk/Application.mk ABI/API detection
+- [x] Android ndk-build adapter and Windows launcher support
+- [x] Real NDK 21.4.7075529 arm64-v8a/API 21 smoke build against a pinned DungeonRush Android project
+- [x] Eight native shared libraries verified and SHA-256 recorded
+- [ ] Package/install APK and test launch on an Android device
+- [ ] Test touch/input, audio, saves, rendering, and performance on real hardware
 
 ## v0.4.x — AI-assisted port workflow
 - [ ] Agent task graph with bounded permissions

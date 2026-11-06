@@ -92,5 +92,6 @@ jobs:
           path: |
             ${{ runner.temp }}/agpt-dungeonrush-arm64/agpt-logs/ndk-build.log
             ${{ runner.temp }}/agpt-dungeonrush-arm64/agpt-ndkbuild-provenance.json
+            ${{ runner.temp }}/agpt-dungeonrush-arm64/libs/**
             ${{ runner.temp }}/agpt-dungeonrush-result.json
           if-no-files-found: warn

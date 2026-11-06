@@ -2,9 +2,9 @@
 
 AI-assisted, evidence-driven PC-to-Android game porting workspace.
 
-AGPT is an orchestration and analysis toolkit—not a universal emulator and not a promise that every PC game can be converted automatically. It inventories game directories, identifies executable/package metadata, produces traceable route recommendations, checks local toolchains, and creates starter projects for native Android and compatibility workflows.
+AGPT is an orchestration and analysis toolkit—not a universal emulator and not a promise that every PC game can be converted automatically. It inventories game directories and source trees, identifies executable/package/build metadata, produces traceable route recommendations, checks local toolchains, and creates starter projects for native Android and compatibility workflows.
 
-> v0.3.0 scope: bounded read-only reconnaissance, PE/ELF dependency extraction, Unity/Unreal/Godot metadata probes, metadata-only ZIP inspection, route planning, analyzer plugins, an opt-in Ghidra Headless adapter, and an opt-in Android NDK/CMake native-library build adapter. AGPT does not execute imported games, bypass DRM/anti-cheat, unpack protected content, or claim that a native library or APK is playable merely because it builds.
+> v0.3.1 adds bounded C/C++ source and build-system reconnaissance, SDL dependency detection, Android.mk/Application.mk ABI/API probes, and an opt-in Android `ndk-build` adapter. The project also has a real GitHub Actions ARM64 NDK smoke build against a pinned DungeonRush Android reference project. It still does not execute imported games, bypass DRM/anti-cheat, unpack protected content, or claim that a native library or APK is playable merely because it builds.
 
 ## Capabilities
 
@@ -13,10 +13,11 @@ AGPT is an orchestration and analysis toolkit—not a universal emulator and not
 - Parse PE import tables and ELF DT_NEEDED entries with bounded reads.
 - Detect Unity editor/player/package metadata, Unreal build/PAK metadata, and Godot PCK versions.
 - Inspect ZIP/APK/JAR central-directory metadata without decompression or extraction.
-- Flag unsafe archive member paths and suspicious declared compression ratios.
+- Scan bounded C/C++ source/header samples and recognize CMake, Android.mk, Application.mk, Gradle, and Makefile declarations.
+- Detect SDL2 and optional SDL2_image, SDL2_mixer, SDL2_net, and SDL2_ttf dependencies from build files and includes.
 - Compare native, compatibility, and hybrid routes using traceable heuristic evidence.
 - Run Ghidra Headless for one user-selected binary and export bounded program metadata.
-- Configure and build Android native shared libraries using a user-installed NDK/CMake toolchain, recording logs, hashes, and provenance.
+- Build native shared libraries from CMake or Android.mk projects using a user-installed Android NDK; record logs, ABI/API, output hashes, and provenance.
 - Check optional tools including Ghidra, Java, CMake, Android SDK/NDK, ADB, Wine, and Box64.
 
 ## Install
@@ -33,16 +34,23 @@ Python 3.10+; no runtime third-party Python dependencies.
     agpt init ./projects/my-game --name "My Game" --source "/path/to/game"
     agpt analyze ./projects/my-game
     agpt doctor --json
+
+    # Ghidra metadata analysis (requires separately installed Ghidra)
     agpt ghidra analyze ./game.exe --output ./reports/game-ghidra.json
+
+    # CMake-based Android shared-library build (not an APK)
     agpt ndk build ./native-source --build-dir ./build/game-arm64 --abi arm64-v8a --api 26 --build-type Release
 
-Analysis writes JSON and Markdown reports under the Port Project. Source game files remain untouched.
+    # Android.mk-based shared-library build (not an APK)
+    agpt ndk-build build ./jni --build-dir ./build/game-ndk --abi arm64-v8a --api 21
+
+Analysis writes JSON and Markdown reports under the Port Project. Source game files remain untouched by reconnaissance.
 
 ## Route model
 
 | Route | Intended use | Current behavior |
 |---|---|---|
-| Native | Reuse/port engine and game code to Android ARM64 | NDK/CMake starter and optional native-library build adapter |
+| Native | Reuse/port engine and game code to Android ARM64 | Source/build evidence, NDK/CMake and ndk-build shared-library adapters |
 | Compatibility | Run an original Windows build under an appropriate runtime | Generate profiles; runtime setup/launch is not automatic |
 | Hybrid | Replace selected modules while keeping other components | Planning and evidence only; integration is project-specific |
 
@@ -50,7 +58,7 @@ Route scores are heuristic fit scores, not probabilities, benchmarks, or compati
 
 ## External tools and trust boundaries
 
-Ghidra and Android SDK/NDK/CMake are optional user-installed tools. AGPT does not download, install, or update them. Ghidra imports with read-only mode into a disposable project and exports metadata only; it does not decompile or patch the selected binary. The NDK adapter executes CMake project build logic from the supplied source tree. Only build source you trust, preferably in an isolated worker with no unrelated secrets and restricted network access.
+Ghidra and Android SDK/NDK/CMake are optional user-installed tools. AGPT does not download, install, or update them. Ghidra imports with read-only mode into a disposable project and exports metadata only; it does not decompile or patch the selected binary. The NDK adapters execute build logic from the supplied source tree. Only build source you trust, preferably in an isolated worker with no unrelated secrets and restricted network access.
 
 A successful native-library build does not mean an APK was assembled, installed, or that gameplay works. APK packaging and real-device gameplay QA are separate milestones.
 

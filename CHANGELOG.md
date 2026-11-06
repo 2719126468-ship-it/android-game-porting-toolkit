@@ -1,17 +1,25 @@
 # Changelog
 
-## 0.3.0 — Reproducible tool adapters (2026-11-06)
+## 0.3.1 — Source-native reconnaissance and real NDK build (2026-11-06)
+
+- Add bounded, read-only source/build probes for C/C++, CMake, Android.mk, Application.mk, Gradle, and Makefile projects.
+- Detect SDL2, SDL2_image, SDL2_mixer, SDL2_net, and SDL2_ttf from bounded build declarations and source includes.
+- Feed source-language, native-target, Android ABI/API, and build-system evidence into route planning.
+- Add the `agpt ndk-build build` adapter for trusted Android.mk projects, with isolated outputs, bounded timeout, logs, hashes, and provenance.
+- Add mocked tests for source recognition, ndk-build outputs, Windows launcher handling, and retry-safe build workspaces.
+- Run a real GitHub Actions Android NDK smoke build against a pinned DungeonRush Android reference project: NDK 21.4.7075529, arm64-v8a, API 21; eight shared libraries were produced and hashed. This is not an APK or gameplay claim.
+- Add a repeatable workflow artifact containing the Android shared libraries, logs, and provenance.
+
+## 0.3.0 — Reproducible tool adapters
 
 - Add opt-in Ghidra Headless analysis for one explicitly selected binary.
 - Bundle a bounded Ghidra metadata exporter for program format, address range, external libraries, functions, and memory-block count.
 - Use a disposable Ghidra project, read-only import, process timeout, logs, and before/after input SHA-256 verification.
-- Add an opt-in Android NDK/CMake adapter for native shared-library builds.
+- Add an opt-in Android NDK/CMake native-library build adapter.
 - Record NDK version, ABI/API, build type, logs, output library hashes, and build provenance.
 - Add `agpt ghidra analyze` and `agpt ndk build` commands.
 - Fix CI setup for the `src` package layout by installing the package before running tests.
 - Update GitHub Actions to Node 24-compatible action releases.
-
-External adapters are tested with mocked tools in this environment. Real Ghidra and NDK executions remain separate validation tasks.
 
 ## 0.2.0 — Better reconnaissance
 

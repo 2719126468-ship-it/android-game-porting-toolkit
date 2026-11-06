@@ -12,14 +12,22 @@ The exporter reports program format/language/compiler metadata, address range, e
 
 ## Android NDK + CMake
 
-The NDK adapter builds a trusted CMake source tree for a selected Android ABI/API. Supply an NDK path or set ANDROID_NDK_HOME; optionally set SDK path or ANDROID_SDK_ROOT. CMake is discovered from PATH or the SDK's CMake components.
+The CMake adapter builds a trusted CMake source tree for a selected Android ABI/API. Supply an NDK path or set ANDROID_NDK_HOME; optionally set SDK path or ANDROID_SDK_ROOT. CMake is discovered from PATH or the SDK's CMake components.
 
     agpt ndk build ./native-source --build-dir ./build/arm64 --abi arm64-v8a --api 26
 
 The source tree must contain CMakeLists.txt. The build directory must be outside the source tree and either empty or carry AGPT's source-bound CMake cache marker. The adapter records configure/build logs, NDK version when available, selected ABI/API, generated shared-library SHA-256 hashes, and build provenance.
 
-This adapter builds native shared libraries only. It does not create an APK, install to a device, launch a game, or verify gameplay.
+## Android ndk-build / Android.mk
+
+The ndk-build adapter supports projects with a regular Android.mk and optional Application.mk:
+
+    agpt ndk-build build ./jni --build-dir ./build/game-arm64 --abi arm64-v8a --api 21 --jobs 2
+
+It locates the ndk-build launcher inside the selected NDK, routes generated objects and libraries into a separate AGPT-owned output workspace, preserves the source tree, and records the NDK version, ABI/API, shared-library sizes and SHA-256 hashes, log, and provenance. A failed build leaves an owned workspace marker so the same source/ABI/API can be retried safely. A non-empty unrelated output directory is refused.
+
+**Both NDK adapters build shared libraries only.** They do not create an APK, install to a device, launch a game, or verify gameplay.
 
 ## Trust and isolation
 
-Both adapters are opt-in. AGPT does not install, download, or update external tools. Ghidra can be CPU/memory intensive. CMake build files are executable project logic: only build source you trust, preferably on an isolated worker with least privilege, bounded resources, and restricted network access.
+All adapters are opt-in. AGPT does not install, download, or update external tools. Ghidra can be CPU/memory intensive. CMake/Android.mk build files are executable project logic: only build source you trust, preferably on an isolated worker with least privilege, bounded resources, and restricted network access.
