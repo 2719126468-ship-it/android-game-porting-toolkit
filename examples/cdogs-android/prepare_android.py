@@ -19,7 +19,15 @@ def replace_once(path: Path, old: str, new: str, label: str) -> None:
 
 def patch_cdogs_source(source: Path) -> None:
     cmake_root = (source / "CMakeLists.txt").read_text(encoding="utf-8")
-    if 'set(VERSION "2.5.0")' not in cmake_root:
+    expected_version = all(
+        marker in cmake_root
+        for marker in (
+            'set(VERSION_MAJOR "2")',
+            'set(VERSION_MINOR "5")',
+            'set(VERSION_PATCH "0")',
+        )
+    )
+    if not expected_version:
         raise SystemExit("Refusing to patch an unexpected C-Dogs source version; expected 2.5.0")
 
     root_cmake = source / "CMakeLists.txt"
