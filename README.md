@@ -30,7 +30,7 @@ This is **an upstream Android port used as a build/packaging reference, not an A
 - Scan bounded C/C++ source/header samples and recognize CMake, Android.mk, Application.mk, Gradle, and Makefile declarations.
 - Detect SDL2 and optional SDL2_image, SDL2_mixer, SDL2_net, and SDL2_ttf dependencies from build files and includes.
 - Compare native, compatibility, and hybrid routes using traceable heuristic evidence.
-- Generate a plan-only port task graph with dependencies, acceptance criteria, proposed capabilities, and approval gates via `agpt plan`.\n- Create human-reviewed unified-diff patch proposals with source hashes and strict read-only path validation via `agpt patch propose`.
+- Generate a plan-only port task graph with dependencies, acceptance criteria, proposed capabilities, and approval gates via `agpt plan`.\n- Create human-reviewed unified-diff patch proposals with source hashes and strict path validation; apply them only after explicit `agpt patch apply ... --approve` approval.
 - Run Ghidra Headless for one user-selected binary and export bounded program metadata.
 - Build native shared libraries from CMake or Android.mk projects using a user-installed Android NDK; record logs, ABI/API, output hashes, and provenance.
 - Check optional tools including Ghidra, Java, CMake, Android SDK/NDK, ADB, Wine, and Box64.
@@ -79,4 +79,4 @@ Ghidra and Android SDK/NDK/CMake are optional user-installed tools. AGPT does no
 
 A successful native-library build does not mean an APK was assembled, installed, or that gameplay works. APK packaging and real-device gameplay QA are separate milestones.
 
-See SECURITY.md, docs/ARCHITECTURE.md, docs/ADAPTERS.md, docs/SAFETY_AND_LIMITS.md, and ROADMAP.md.
+See SECURITY.md, docs/ARCHITECTURE.md, docs/ADAPTERS.md, docs/PATCH_WORKFLOW.md, docs/SAFETY_AND_LIMITS.md, and ROADMAP.md.
