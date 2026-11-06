@@ -94,7 +94,9 @@ jobs:
           echo "AGPT_CDOGS_SOURCE_DIR=$GITHUB_WORKSPACE/vendor/cdogs" >> "$GITHUB_ENV"
           echo "AGPT_SDL2_SOURCE_DIR=$GITHUB_WORKSPACE/vendor/SDL2" >> "$GITHUB_ENV"
           echo "AGPT_SDL2_MIXER_SOURCE_DIR=$GITHUB_WORKSPACE/vendor/SDL2_mixer" >> "$GITHUB_ENV"
-          test -f build/cdogs-android/app/src/main/assets/graphics/font.png
+          test -d build/cdogs-android/app/src/main/assets/data
+          test -d build/cdogs-android/app/src/main/assets/graphics
+          test -d build/cdogs-android/app/src/main/assets/missions
           test -f build/cdogs-android/app/src/main/java/com/agpt/cdogs/CdogsActivity.java
 
       - name: Verify pinned Android project configuration
@@ -132,6 +134,8 @@ jobs:
           cp "$APK" "$GITHUB_WORKSPACE/dist/agpt-cdogs-sdl-2.5.0-arm32-arm64-debug.apk"
           cp "$AGPT_CDOGS_SOURCE_DIR/COPYING" "$GITHUB_WORKSPACE/dist/C-Dogs-GPL-COPYING.txt"
           cp "$AGPT_CDOGS_SOURCE_DIR/doc/README_DATA.md" "$GITHUB_WORKSPACE/dist/C-Dogs-asset-licenses.txt"
+          cp "$AGPT_CDOGS_SOURCE_DIR/doc/COPYING.SDL2.txt" "$GITHUB_WORKSPACE/dist/C-Dogs-SDL2-third-party-license.txt"
+          cp "$AGPT_CDOGS_SOURCE_DIR/doc/LICENSE.enet.txt" "$GITHUB_WORKSPACE/dist/C-Dogs-ENet-third-party-license.txt"
           cp "$AGPT_SDL2_SOURCE_DIR/LICENSE.txt" "$GITHUB_WORKSPACE/dist/SDL2-zlib-license.txt"
           cp "$AGPT_SDL2_MIXER_SOURCE_DIR/LICENSE.txt" "$GITHUB_WORKSPACE/dist/SDL2-mixer-zlib-license.txt"
           python - <<'PY'
@@ -175,6 +179,8 @@ jobs:
             dist/agpt-cdogs-sdl-2.5.0-arm32-arm64-debug.apk
             dist/C-Dogs-GPL-COPYING.txt
             dist/C-Dogs-asset-licenses.txt
+            dist/C-Dogs-SDL2-third-party-license.txt
+            dist/C-Dogs-ENet-third-party-license.txt
             dist/SDL2-zlib-license.txt
             dist/SDL2-mixer-zlib-license.txt
             dist/build-report.json
