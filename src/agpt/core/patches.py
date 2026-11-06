@@ -275,8 +275,27 @@ def apply_patch_proposal(
     if len(replacement_bytes) > MAX_SOURCE_BYTES:
         raise PatchProposalError("replacement_text exceeds the 1 MiB safety limit")
     after_sha = proposal.get("after_sha256")
-    if not isinstance(after_sha, str) or _sha256(replacement_bytes) != after_sha:
+    if not isinstance(after_sha, str) or not SHA256_RE.fullmatch(after_sha):
         raise PatchProposalError("replacement_text hash does not match proposal metadata")
+    if _sha256(replacement_bytes) != after_sha:
+        raise PatchProposalError("replacement_text hash does not match proposal metadata")
+    try:
+        current_text = current_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise PatchProposalError("current source file is not valid UTF-8 text") from exc
+    expected_diff = "".join(
+        difflib.unified_diff(
+            current_text.splitlines(keepends=True),
+            replacement_text.splitlines(keepends=True),
+            fromfile=f"a/{target_file}",
+            tofile=f"b/{target_file}",
+            n=3,
+        )
+    )
+    if len(expected_diff.encode("utf-8")) > MAX_DIFF_BYTES:
+        raise PatchProposalError("recomputed unified diff exceeds the safety size limit")
+    if proposal.get("unified_diff") != expected_diff:
+        raise PatchProposalError("review diff does not match the approved source and replacement text")
 
     # Re-resolve and re-hash immediately before the atomic replacement.
     target = _resolve_patch_target(root, target_file)
@@ -285,6 +304,8 @@ def apply_patch_proposal(
         raise PatchProposalError("source file changed during approval; refusing to apply")
     original_mode = target.stat().st_mode
     _atomic_write(target, replacement_bytes, original_mode)
+    if _sha256(target.read_bytes()) != after_sha:
+        raise PatchProposalError("source patch was written but post-write verification failed")
 
     applied_at = datetime.now(timezone.utc).isoformat()
     proposal.update({
