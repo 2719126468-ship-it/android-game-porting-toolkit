@@ -9,6 +9,8 @@
 - Add mocked tests for source recognition, ndk-build outputs, Windows launcher handling, and retry-safe build workspaces.
 - Run a real GitHub Actions Android NDK smoke build against a pinned DungeonRush Android reference project: NDK 21.4.7075529, arm64-v8a, API 21; eight shared libraries were produced and hashed. This is not an APK or gameplay claim.
 - Add a repeatable workflow artifact containing the Android shared libraries, logs, and provenance.
+- Build the pinned upstream DungeonRush Android reference APK successfully with NDK r21e, Gradle 5.6, AGP 3.5.0, and JDK 8; verify package ID, min API 16, and both arm64-v8a/armeabi-v7a ABIs (16 shared libraries total). This validates packaging only; it is not an AGPT-generated port or a gameplay test, and the APK is not redistributed while asset rights remain unresolved.
+- Publish a validation report, manifest badging, and ABI/library inventory as a GitHub Actions artifact; document device/gameplay testing as the next acceptance gate.
 
 ## 0.3.0 — Reproducible tool adapters
 
