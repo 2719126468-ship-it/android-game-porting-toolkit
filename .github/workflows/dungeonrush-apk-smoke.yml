@@ -40,7 +40,7 @@ jobs:
 
           # AGP 3.5 otherwise auto-selects the newest side-by-side NDK on the runner.
           # Pin the legacy project's local.properties to NDK r21e explicitly.
-          printf 'sdk.dir=%s\\nndk.dir=%s\\n' "$ANDROID_SDK_ROOT" "$ANDROID_NDK_HOME" > vendor/DungeonRush_Android/DemoGame/local.properties
+          printf 'sdk.dir=%s\nndk.dir=%s\n' "$ANDROID_SDK_ROOT" "$ANDROID_NDK_HOME" > vendor/DungeonRush_Android/DemoGame/local.properties
           grep -F "ndk.dir=$ANDROID_NDK_HOME" vendor/DungeonRush_Android/DemoGame/local.properties
           "$ANDROID_NDK_HOME/ndk-build" --version
 
