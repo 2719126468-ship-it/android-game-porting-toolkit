@@ -96,14 +96,10 @@ jobs:
           wrapper.write_text(wrapper_text, encoding="utf-8")
 
           app_name = Path("app/src/main/res/values/strings.xml")
-          app_text = app_name.read_text(encoding="utf-8")
-          app_text = re.sub(
-              r'(<string name="app_name">).*?(</string>)',
-              r'\1AGPT Orbit Snake\2',
-              app_text,
-              count=1,
+          app_name.write_text(
+              '<resources>\n    <string name="app_name">AGPT Orbit Snake</string>\n</resources>\n',
+              encoding="utf-8",
           )
-          app_name.write_text(app_text, encoding="utf-8")
 
           application_mk = Path("app/jni/Application.mk")
           mk_text = application_mk.read_text(encoding="utf-8")
