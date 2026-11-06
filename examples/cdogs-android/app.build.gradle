@@ -15,9 +15,9 @@ android {
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_STL=c++_static",
-                    "-DAGPT_CDOGS_SOURCE_DIR=\${System.getenv('AGPT_CDOGS_SOURCE_DIR')}",
-                    "-DAGPT_SDL2_SOURCE_DIR=\${System.getenv('AGPT_SDL2_SOURCE_DIR')}",
-                    "-DAGPT_SDL2_MIXER_SOURCE_DIR=\${System.getenv('AGPT_SDL2_MIXER_SOURCE_DIR')}"
+                    "-DAGPT_CDOGS_SOURCE_DIR=${System.getenv('AGPT_CDOGS_SOURCE_DIR')}",
+                    "-DAGPT_SDL2_SOURCE_DIR=${System.getenv('AGPT_SDL2_SOURCE_DIR')}",
+                    "-DAGPT_SDL2_MIXER_SOURCE_DIR=${System.getenv('AGPT_SDL2_MIXER_SOURCE_DIR')}"
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
         }
