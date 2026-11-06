@@ -79,4 +79,4 @@ Ghidra and Android SDK/NDK/CMake are optional user-installed tools. AGPT does no
 
 A successful native-library build does not mean an APK was assembled, installed, or that gameplay works. APK packaging and real-device gameplay QA are separate milestones.
 
-See SECURITY.md, docs/ARCHITECTURE.md, docs/ADAPTERS.md, docs/PATCH_WORKFLOW.md, docs/SAFETY_AND_LIMITS.md, and ROADMAP.md.
+See SECURITY.md, docs/ARCHITECTURE.md, docs/ADAPTERS.md, docs/PATCH_WORKFLOW.md, docs/SAFETY_AND_LIMITS.md, the [C-Dogs SDL 2.5.0 validation plan](docs/testing/cdogs-sdl-2.5.0.md), and ROADMAP.md.
