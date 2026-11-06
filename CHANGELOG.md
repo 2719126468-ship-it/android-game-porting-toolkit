@@ -1,24 +1,25 @@
 # Changelog
 
+## 0.3.0 — Reproducible tool adapters (2026-11-06)
+
+- Add opt-in Ghidra Headless analysis for one explicitly selected binary.
+- Bundle a bounded Ghidra metadata exporter for program format, address range, external libraries, functions, and memory-block count.
+- Use a disposable Ghidra project, read-only import, process timeout, logs, and before/after input SHA-256 verification.
+- Add an opt-in Android NDK/CMake adapter for native shared-library builds.
+- Record NDK version, ABI/API, build type, logs, output library hashes, and build provenance.
+- Add `agpt ghidra analyze` and `agpt ndk build` commands.
+- Fix CI setup for the `src` package layout by installing the package before running tests.
+- Update GitHub Actions to Node 24-compatible action releases.
+
+External adapters are tested with mocked tools in this environment. Real Ghidra and NDK executions remain separate validation tasks.
+
 ## 0.2.0 — Better reconnaissance
 
-- Parse PE optional headers and section mappings to extract direct import DLL names.
-- Parse ELF program headers and PT_DYNAMIC to extract bounded DT_NEEDED dependencies.
-- Detect Unity ProjectVersion.txt, UnityFS bundle headers, and IL2CPP metadata markers.
-- Detect Unreal Build.version metadata, PAK footer/version markers, and IoStore package layout.
-- Detect Godot PCK engine and pack versions, including the documented embedded-pack trailer layout.
-- Inspect ZIP central-directory metadata without decompressing or extracting members.
-- Flag suspicious archive paths, extreme declared compression ratios, unsupported ZIP64 metadata, and parser-limit conditions.
-- Add synthetic binary/package fixtures and malformed-input tests.
-- Keep analyzers read-only, with explicit input, entry-count, header-read, and metadata-size limits.
+- Parse PE import tables and ELF DT_NEEDED dependencies.
+- Detect Unity, Unreal, and Godot metadata.
+- Inspect ZIP central-directory metadata without extracting members.
+- Add malformed-input and resource-limit tests.
 
 ## 0.1.0 — Foundation
 
-- Port Project manifest and CLI lifecycle.
-- Read-only bounded game directory scanning.
-- PE/ELF architecture and engine/API evidence heuristics.
-- Explainable native/compatibility/hybrid route scoring with manual-review fallback.
-- Deterministic Scout and Route Planner agents.
-- Optional trusted analyzer entry-point plugins.
-- Toolchain diagnostics, native Android NDK starter, and compatibility profile template.
-- Unit tests, security guidance, plugin documentation, roadmap, and GitHub Actions CI.
+- Port Project manifest, CLI, read-only inventory, route planner, analyzer plugin contract, starter templates, tests, and CI.

@@ -1,8 +1,10 @@
+"""Optional toolchain discovery for AGPT."""
 from __future__ import annotations
 
 import os
 import shutil
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -14,37 +16,61 @@ class ToolStatus:
     required_for: str
 
 
-def inspect_toolchain() -> list[ToolStatus]:
-    tools = [
+def _first(candidates):
+    for name in candidates:
+        found = shutil.which(name)
+        if found:
+            return found
+    return None
+
+
+def inspect_toolchain():
+    checks = [
         ("python", ["python3", "python"], "AGPT runtime", "core"),
-        ("java", ["java"], "JVM required by common Ghidra/Gradle workflows", "reverse/build"),
-        ("ghidra-analyzeHeadless", ["analyzeHeadless", "ghidra-analyzeHeadless"], "Headless binary analysis", "reverse"),
-        ("cmake", ["cmake"], "Native build generation", "native"),
-        ("ninja", ["ninja"], "Fast native builds", "native"),
+        ("java", ["java"], "JVM for Ghidra/Gradle", "reverse/build"),
+        ("ninja", ["ninja"], "Native build generator", "native"),
         ("clang", ["clang"], "Native compiler", "native"),
-        ("ndk-build", ["ndk-build"], "Android NDK", "native"),
-        ("adb", ["adb"], "Android device installation/testing", "device QA"),
+        ("adb", ["adb"], "Android device QA", "device QA"),
         ("gradle", ["gradle"], "Android project orchestration", "APK packaging"),
         ("wine", ["wine", "wine64"], "Windows compatibility runtime", "compatibility"),
-        ("box64", ["box64"], "x86-64 userspace translation on supported ARM64 systems", "compatibility"),
-        ("fex", ["FEXInterpreter", "fex"], "x86/x86-64 translation on supported hosts", "compatibility"),
+        ("box64", ["box64"], "x86-64 translation on supported ARM64 systems", "compatibility"),
     ]
     results = []
-    for name, candidates, purpose, required_for in tools:
-        found = next((shutil.which(candidate) for candidate in candidates if shutil.which(candidate)), None)
-        results.append(ToolStatus(name, found is not None, found, purpose, required_for))
-    sdk = os.environ.get("ANDROID_SDK_ROOT") or os.environ.get("ANDROID_HOME")
-    ndk = os.environ.get("ANDROID_NDK_HOME") or os.environ.get("ANDROID_NDK_ROOT")
-    results.append(ToolStatus("android-sdk-env", bool(sdk), sdk, "Android SDK environment variable", "APK packaging"))
-    results.append(ToolStatus("android-ndk-env", bool(ndk), ndk, "Android NDK environment variable", "native"))
+    for name, candidates, purpose, required_for in checks:
+        path = _first(candidates)
+        results.append(ToolStatus(name, path is not None, path, purpose, required_for))
+
+    cmake = shutil.which("cmake")
+    results.append(ToolStatus("cmake", cmake is not None, cmake, "Native build generation", "native"))
+    for env in ("ANDROID_SDK_ROOT", "ANDROID_HOME"):
+        if os.environ.get(env):
+            results.append(ToolStatus("android-sdk", True, os.environ[env], "Android SDK", "native/package"))
+            break
+    else:
+        results.append(ToolStatus("android-sdk", False, None, "Android SDK", "native/package"))
+
+    from agpt.adapters.ghidra import discover_ghidra, AdapterError
+    try:
+        path = str(discover_ghidra())
+        results.append(ToolStatus("ghidra-headless", True, path, "Ghidra Headless analysis", "reverse"))
+    except AdapterError:
+        results.append(ToolStatus("ghidra-headless", False, None, "Ghidra Headless analysis", "reverse"))
+
+    from agpt.adapters.ndk import discover_ndk, NdkBuildError
+    try:
+        path = str(discover_ndk())
+        results.append(ToolStatus("android-ndk", True, path, "Android native compiler/toolchain", "native"))
+    except NdkBuildError:
+        results.append(ToolStatus("android-ndk", False, None, "Android native compiler/toolchain", "native"))
+
     return results
 
 
-def doctor_dict() -> dict:
+def doctor_dict():
     statuses = inspect_toolchain()
     return {
         "schema_version": "1.0",
-        "core_ready": next(item.available for item in statuses if item.name == "python"),
+        "core_ready": any(item.name == "python" and item.available for item in statuses),
         "tools": [asdict(item) for item in statuses],
         "note": "Missing optional tools do not prevent project creation or static inspection.",
     }
