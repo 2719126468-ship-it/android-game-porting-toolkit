@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+from agpt.agents.scout import ScoutAgent
+from agpt.agents.task_graph import build_task_graph
 from agpt import __version__
 from agpt.adapters.doctor import doctor_dict
 from agpt.core.project import create_project, load_project
@@ -29,6 +31,13 @@ def _parser() -> argparse.ArgumentParser:
     analyze.add_argument("project_dir")
     analyze.add_argument("--plugins", action="store_true", help="load installed trusted analyzer plugins")
     analyze.add_argument("--max-files", type=int, default=100_000)
+
+    plan = sub.add_parser("plan", help="create a plan-only, approval-gated port task graph")
+    plan.add_argument("project_dir")
+    plan.add_argument("--route", choices=["auto", "native", "compatibility", "hybrid"], default=None,
+                      help="override the project route preference")
+    plan.add_argument("--output", help="optional task graph JSON output path")
+    plan.add_argument("--max-files", type=int, default=100_000)
 
     inspect = sub.add_parser("inspect", help="inspect a game directory without creating a project")
     inspect.add_argument("game_dir")
@@ -77,6 +86,39 @@ def main(argv: list[str] | None = None) -> int:
                          "json_path": result["json_path"], "markdown_path": result["markdown_path"],
                          "recommended_route": result["report"]["recommended_route"],
                          "confidence": result["report"]["confidence"]})
+            return 0
+        if args.command == "plan":
+            manifest, project_root = load_project(args.project_dir)
+            inventory = ScoutAgent().run(manifest["source_path"], max_files=args.max_files)
+            task_plan = build_task_graph(
+                inventory,
+                project_id=manifest["project_id"],
+                preferred_route=manifest.get("preferred_route", "auto"),
+                route_override=args.route,
+            )
+            output_path = (
+                Path(args.output).expanduser()
+                if args.output
+                else project_root / "plans" / "port-task-graph.json"
+            )
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(
+                json.dumps(task_plan, ensure_ascii=False, indent=2) + "\\n",
+                encoding="utf-8",
+            )
+            _print_json({
+                "success": True,
+                "project_id": manifest["project_id"],
+                "selected_route": task_plan["selected_route"],
+                "recommended_route": task_plan["recommended_route"],
+                "route_confidence": task_plan["route_confidence"],
+                "task_count": len(task_plan["tasks"]),
+                "approval_required_count": sum(
+                    1 for task in task_plan["tasks"] if task["approval_required"]
+                ),
+                "execution_enabled": False,
+                "plan_path": str(output_path.resolve()),
+            })
             return 0
         if args.command == "inspect":
             output = Path(args.output) if args.output else Path.cwd() / "agpt-inspection"
