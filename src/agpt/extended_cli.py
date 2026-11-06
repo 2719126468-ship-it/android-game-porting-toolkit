@@ -65,6 +65,31 @@ def _ndk(argv):
         return 2
 
 
+def _ndk_make(argv):
+    from agpt.adapters.ndkbuild import NdkMakeError, build_native
+
+    parser = argparse.ArgumentParser(prog="agpt ndk-build build")
+    parser.add_argument("action", choices=["build"])
+    parser.add_argument("source")
+    parser.add_argument("--build-dir", required=True)
+    parser.add_argument("--ndk")
+    parser.add_argument("--abi", default="arm64-v8a")
+    parser.add_argument("--api", type=int, default=21)
+    parser.add_argument("--timeout", type=int, default=1800)
+    parser.add_argument("--jobs", type=int, default=2)
+    args = parser.parse_args(argv)
+    try:
+        result = build_native(
+            args.source, args.build_dir, ndk_dir=args.ndk,
+            abi=args.abi, android_api=args.api, timeout=args.timeout, jobs=args.jobs,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
+    except (NdkMakeError, OSError, ValueError) as exc:
+        print(f"agpt ndk-build: error: {exc}", file=sys.stderr)
+        return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     if args and args[0] == "ghidra":
@@ -77,4 +102,9 @@ def main(argv: list[str] | None = None) -> int:
             print("usage: agpt ndk build SOURCE --build-dir DIR [options]", file=sys.stderr)
             return 2
         return _ndk(args[1:])
+    if args and args[0] == "ndk-build":
+        if len(args) < 2:
+            print("usage: agpt ndk-build build SOURCE --build-dir DIR [options]", file=sys.stderr)
+            return 2
+        return _ndk_make(args[1:])
     return base_main(args)
