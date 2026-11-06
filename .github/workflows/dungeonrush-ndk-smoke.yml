@@ -1,0 +1,95 @@
+name: DungeonRush Android NDK smoke
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/agpt/adapters/ndkbuild.py"
+      - "src/agpt/analyzers/source_build.py"
+      - "src/agpt/extended_cli.py"
+      - ".github/workflows/dungeonrush-ndk-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  dungeonrush-arm64:
+    name: Build existing DungeonRush Android port (arm64-v8a)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout AGPT
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Android SDK tools
+        uses: android-actions/setup-android@v4
+
+      - name: Install pinned Android NDK
+        run: |
+          sdkmanager --install "ndk;21.4.7075529"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/21.4.7075529" >> "$GITHUB_ENV"
+          test -f "$ANDROID_SDK_ROOT/ndk/21.4.7075529/ndk-build"
+
+      - name: Install AGPT from this checkout
+        run: python -m pip install -e .
+
+      - name: Checkout the existing DungeonRush Android reference port
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: imrunning/DungeonRush_Android
+          ref: c3f673683d956abd80abf43fc3ad7e4066841466
+          path: vendor/DungeonRush_Android
+
+      - name: Verify expected Android.mk project structure
+        run: |
+          test -f vendor/DungeonRush_Android/DemoGame/app/src/main/jni/Android.mk
+          test -f vendor/DungeonRush_Android/DemoGame/app/src/main/jni/Application.mk
+          test -f vendor/DungeonRush_Android/DemoGame/app/src/main/jni/src/Android.mk
+
+      - name: Build native libraries for arm64-v8a with AGPT
+        run: |
+          python -m agpt ndk-build build vendor/DungeonRush_Android/DemoGame/app/src/main/jni \
+            --build-dir "$RUNNER_TEMP/agpt-dungeonrush-arm64" \
+            --ndk "$ANDROID_NDK_HOME" --abi arm64-v8a --api 21 \
+            --jobs 2 --timeout 2700 | tee "$RUNNER_TEMP/agpt-dungeonrush-result.json"
+
+      - name: Verify output is a shared-library build, not an APK claim
+        env:
+          RESULT_FILE: ${{ runner.temp }}/agpt-dungeonrush-result.json
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          result = json.loads(Path(os.environ["RESULT_FILE"]).read_text())
+          assert result["status"] == "ndk_make_native_library_build_success", result
+          assert result["abi"] == "arm64-v8a", result
+          assert result["libraries"], result
+          assert all(len(item["sha256"]) == 64 for item in result["libraries"]), result
+          print(json.dumps({
+              "status": result["status"],
+              "ndk_version": result["ndk_version"],
+              "abi": result["abi"],
+              "android_api": result["android_api"],
+              "library_count": len(result["libraries"]),
+              "libraries": result["libraries"],
+              "provenance_path": result["provenance_path"],
+              "scope": "native .so only; no APK or gameplay claim",
+          }, indent=2))
+          PY
+
+      - name: Upload build logs and provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dungeonrush-android-arm64-ndk-build
+          path: |
+            ${{ runner.temp }}/agpt-dungeonrush-arm64/agpt-logs/ndk-build.log
+            ${{ runner.temp }}/agpt-dungeonrush-arm64/agpt-ndkbuild-provenance.json
+            ${{ runner.temp }}/agpt-dungeonrush-result.json
+          if-no-files-found: warn
