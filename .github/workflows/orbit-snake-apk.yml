@@ -99,7 +99,7 @@ jobs:
           app_text = app_name.read_text(encoding="utf-8")
           app_text = re.sub(
               r'(<string name="app_name">).*?(</string>)',
-              r'\\1AGPT Orbit Snake\\2',
+              r'\1AGPT Orbit Snake\2',
               app_text,
               count=1,
           )
@@ -107,9 +107,9 @@ jobs:
 
           application_mk = Path("app/jni/Application.mk")
           mk_text = application_mk.read_text(encoding="utf-8")
-          mk_text = re.sub(r"^APP_ABI\\s*:=.*$", "APP_ABI := armeabi-v7a arm64-v8a",
+          mk_text = re.sub(r"^APP_ABI\s*:=.*$", "APP_ABI := armeabi-v7a arm64-v8a",
                            mk_text, flags=re.MULTILINE)
-          mk_text = re.sub(r"^APP_PLATFORM\\s*=.*$", "APP_PLATFORM=android-27",
+          mk_text = re.sub(r"^APP_PLATFORM\s*=.*$", "APP_PLATFORM=android-27",
                            mk_text, flags=re.MULTILINE)
           application_mk.write_text(mk_text, encoding="utf-8")
           PY
@@ -133,7 +133,9 @@ jobs:
           "$AAPT" dump badging "$APK" | tee "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
           grep -F "package: name='org.agpt.orbitsnake'" "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
           grep -F "sdkVersion:'27'" "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
-          grep -F "native-code: 'armeabi-v7a' 'arm64-v8a'" "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
+          grep -F "native-code:" "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
+          grep -F "armeabi-v7a" "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
+          grep -F "arm64-v8a" "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
           unzip -Z1 "$APK" | sort > "$GITHUB_WORKSPACE/dist/apk-contents.txt"
           grep -Fx "lib/armeabi-v7a/libmain.so" "$GITHUB_WORKSPACE/dist/apk-contents.txt"
           grep -Fx "lib/arm64-v8a/libmain.so" "$GITHUB_WORKSPACE/dist/apk-contents.txt"
@@ -144,9 +146,10 @@ jobs:
           cp "$GITHUB_WORKSPACE/agpt/LICENSE" "$GITHUB_WORKSPACE/dist/AGPT-MIT-LICENSE.txt"
           cp "$GITHUB_WORKSPACE/vendor/SDL2/LICENSE.txt" "$GITHUB_WORKSPACE/dist/SDL2-ZLIB-LICENSE.txt"
           python - <<'PY'
-          import hashlib, json
+          import hashlib, json, os
           from pathlib import Path
-          apk = Path("$GITHUB_WORKSPACE/dist/agpt-orbit-snake-android-api27-arm32-arm64-debug.apk")
+          dist = Path(os.environ["GITHUB_WORKSPACE"]) / "dist"
+          apk = dist / "agpt-orbit-snake-android-api27-arm32-arm64-debug.apk"
           result = {
               "status": "apk_verified",
               "application_id": "org.agpt.orbitsnake",
@@ -162,7 +165,7 @@ jobs:
               "game_assets": "original vector rendering; no external game assets",
               "device_install_or_gameplay_tested": False
           }
-          Path("$GITHUB_WORKSPACE/dist/build-report.json").write_text(
+          (dist / "build-report.json").write_text(
               json.dumps(result, indent=2) + "\\n", encoding="utf-8"
           )
           print(json.dumps(result, indent=2))

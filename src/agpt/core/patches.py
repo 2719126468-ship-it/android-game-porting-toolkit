@@ -37,7 +37,7 @@ def create_patch_proposal(
     relative = PurePosixPath(file_path)
     if relative.is_absolute() or any(part in {"", ".", ".."} for part in relative.parts):
         raise PatchProposalError("file_path must not be absolute or traverse parent directories")
-    if not isinstance(replacement_text, str) or "\\x00" in replacement_text:
+    if not isinstance(replacement_text, str) or "\x00" in replacement_text:
         raise PatchProposalError("replacement_text must be valid UTF-8 text")
     if len(replacement_text.encode("utf-8")) > MAX_SOURCE_BYTES:
         raise PatchProposalError("replacement_text exceeds the 1 MiB safety limit")
@@ -92,7 +92,7 @@ def create_patch_proposal(
     before_sha = _sha256(before_bytes)
     after_sha = _sha256(after_bytes)
     proposal_id = hashlib.sha256(
-        f"{relative_name}\\0{before_sha}\\0{after_sha}\\0{rationale}".encode("utf-8")
+        f"{relative_name}\0{before_sha}\\0{after_sha}\\0{rationale}".encode("utf-8")
     ).hexdigest()[:16]
     project = Path(project_root).expanduser().resolve()
     proposals_dir = project / "patches" / "proposals"
@@ -123,7 +123,7 @@ def create_patch_proposal(
         },
     }
     proposal_path.write_text(
-        json.dumps(proposal, ensure_ascii=False, indent=2) + "\\n",
+        json.dumps(proposal, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     return {"proposal": proposal, "proposal_path": str(proposal_path.resolve())}

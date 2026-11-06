@@ -73,14 +73,14 @@ class PatchProposalTests(unittest.TestCase):
             source = root / "game"
             source.mkdir()
             binary = source / "binary.dat"
-            binary.write_bytes(b"abc\\x00def")
+            binary.write_bytes(b"abc\x00def")
             with self.assertRaises(PatchProposalError):
                 create_patch_proposal(
                     source, root / "project", file_path="binary.dat",
                     replacement_text="text", rationale="binary test",
                 )
             invalid = source / "invalid.txt"
-            invalid.write_bytes(b"\\xff\\xfe")
+            invalid.write_bytes(b"\xff\xfe")
             with self.assertRaises(PatchProposalError):
                 create_patch_proposal(
                     source, root / "project", file_path="invalid.txt",
