@@ -51,3 +51,21 @@ These points define the initial Android adapter patch set. Each patch should be 
 ## Scope warning
 
 This is the first representative SDL2/native-source port target. It does not establish compatibility with Unity, Unreal, Godot, DirectX-only games, .NET games, or arbitrary Windows executables. Those require separate engine/runtime adapters and independent test fixtures.
+
+
+## AGPT implementation currently under review
+
+The first implementation is staged in PR #2 and is built from pinned upstream checkouts:
+
+- C-Dogs SDL 2.5.0
+- SDL 2.32.10 Android project and native library
+- SDL_mixer 2.8.1
+- Android Gradle Plugin 8.6.1 / Gradle 8.7
+- Android NDK 28.2.13676358, CMake 3.22.1, min API 21
+- armeabi-v7a and arm64-v8a
+
+The preparation script makes narrow, version-checked source edits: preserve SDL's Android SDL_main entry point, build C-Dogs as libmain.so, remove the desktop-only haptic initialization on Android, avoid treating upstream desktop compiler warnings as fatal for the Android NDK, and make the app-private files directory the working/data/config root.
+
+The Android Activity extracts bundled files into private app storage on first launch without overwriting existing files, and exposes touch buttons mapped to the game's default keyboard bindings. The build workflow checks the package ID, min SDK, per-ABI libSDL2.so, libSDL2_mixer.so, and libmain.so, and verifies the debug signature before uploading an artifact.
+
+**Status rule:** a successful APK build is only a packaging result. It is not a successful launch or gameplay test. The workflow report keeps device_install_tested and gameplay_tested false until those checks are actually performed on hardware.
