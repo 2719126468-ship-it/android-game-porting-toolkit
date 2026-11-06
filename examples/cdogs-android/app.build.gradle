@@ -1,0 +1,37 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace "com.agpt.cdogs"
+    compileSdkVersion 35
+    ndkVersion "28.2.13676358"
+
+    defaultConfig {
+        applicationId "com.agpt.cdogs"
+        minSdkVersion 21
+        targetSdkVersion 35
+        versionCode 250
+        versionName "2.5.0-agpt1"
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_static",
+                    "-DAGPT_CDOGS_SOURCE_DIR=\${System.getenv('AGPT_CDOGS_SOURCE_DIR')}",
+                    "-DAGPT_SDL2_SOURCE_DIR=\${System.getenv('AGPT_SDL2_SOURCE_DIR')}",
+                    "-DAGPT_SDL2_MIXER_SOURCE_DIR=\${System.getenv('AGPT_SDL2_MIXER_SOURCE_DIR')}"
+                abiFilters 'armeabi-v7a', 'arm64-v8a'
+            }
+        }
+    }
+
+    buildTypes {
+        debug { minifyEnabled false }
+        release { minifyEnabled false }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'jni/src/CMakeLists.txt'
+            version '3.22.1'
+        }
+    }
+}
