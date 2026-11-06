@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from agpt.core.patches import PatchProposalError, create_patch_proposal
+from agpt.core.patches import PatchProposalError, apply_patch_proposal, create_patch_proposal
 from agpt.agents.scout import ScoutAgent
 from agpt.agents.task_graph import build_task_graph
 from agpt import __version__
@@ -46,6 +46,11 @@ def _parser() -> argparse.ArgumentParser:
     patch_propose = patch_sub.add_parser("propose", help="create a review-only unified diff")
     patch_propose.add_argument("project_dir")
     patch_propose.add_argument("spec", help="JSON file containing file, replacement_text, rationale and optional evidence")
+    patch_apply = patch_sub.add_parser("apply", help="apply a reviewed patch proposal after explicit approval")
+    patch_apply.add_argument("project_dir")
+    patch_apply.add_argument("proposal_id")
+    patch_apply.add_argument("--approve", action="store_true", required=True,
+                             help="explicitly approve application of this proposal")
 
     inspect = sub.add_parser("inspect", help="inspect a game directory without creating a project")
     inspect.add_argument("game_dir")
@@ -171,6 +176,16 @@ def main(argv: list[str] | None = None) -> int:
                 "before_sha256": proposal["before_sha256"],
                 "after_sha256": proposal["after_sha256"],
             })
+            return 0
+        if args.command == "patch" and args.patch_command == "apply":
+            manifest, project_root = load_project(args.project_dir)
+            result = apply_patch_proposal(
+                manifest["source_path"],
+                project_root,
+                args.proposal_id,
+                approve=args.approve,
+            )
+            _print_json(result)
             return 0
         if args.command == "inspect":
             output = Path(args.output) if args.output else Path.cwd() / "agpt-inspection"
