@@ -118,9 +118,11 @@ def scan_game(root: str | Path, *, max_files: int = MAX_FILES) -> GameInventory:
     from agpt.analyzers.binary import collect_binary_evidence
     from agpt.analyzers.engines import analyze_engine_metadata
     from agpt.analyzers.archives import analyze_archives
+    from agpt.analyzers.source_build import analyze_source_build
     inventory.evidence.extend(collect_binary_evidence(base, inventory.records))
     inventory.evidence.extend(analyze_engine_metadata(base, inventory.records))
     inventory.evidence.extend(analyze_archives(base, inventory.records))
+    inventory.evidence.extend(analyze_source_build(base, inventory.records))
     if not any(item.category == "engine" for item in inventory.evidence):
         inventory.evidence.append(Evidence(
             "engine", "unknown", "inventory",
