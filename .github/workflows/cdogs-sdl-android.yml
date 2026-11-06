@@ -107,7 +107,7 @@ jobs:
         run: |
           grep -E 'compileSdkVersion|minSdkVersion|targetSdkVersion|ndkVersion' app/build.gradle
           grep -F 'SDL2_mixer' app/src/main/java/com/agpt/cdogs/CdogsActivity.java
-          grep -F 'OUTPUT_NAME main' app/jni/src/CMakeLists.txt
+          grep -F 'set_target_properties(cdogs-sdl PROPERTIES OUTPUT_NAME main)' "$AGPT_CDOGS_SOURCE_DIR/src/CMakeLists.txt"
           grep -F 'add_library(cdogs-sdl SHARED' "$AGPT_CDOGS_SOURCE_DIR/src/CMakeLists.txt"
 
       - name: Build debug APK
