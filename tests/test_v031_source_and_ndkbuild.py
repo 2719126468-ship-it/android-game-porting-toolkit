@@ -85,8 +85,8 @@ class NdkBuildAdapterTests(unittest.TestCase):
             build = root / "build"
 
             def fake_run(command, **kwargs):
-                libs_arg = next(a for a in command if a.startswith("NDK_LIBS_OUT="))
-                libs = Path(libs_arg.split("=", 1)[1])
+                # The adapter owns this output layout on every host OS.
+                libs = build / "libs"
                 target = libs / "arm64-v8a" / "libmain.so"
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(b"fake-native-library")
