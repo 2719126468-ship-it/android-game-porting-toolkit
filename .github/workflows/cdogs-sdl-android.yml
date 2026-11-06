@@ -76,7 +76,7 @@ jobs:
             "platforms;android-35" \
             "build-tools;35.0.0" \
             "ndk;28.2.13676358" \
-            "cmake;3.28.1"
+            "cmake;3.25.1"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358" >> "$GITHUB_ENV"
           test -x "$ANDROID_SDK_ROOT/ndk/28.2.13676358/ndk-build"
 
