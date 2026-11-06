@@ -22,6 +22,7 @@ AGPT 不是万能模拟器，也不承诺所有 PC 游戏都能一键转换。�
 - 有上限地扫描 C/C++ 源码和头文件，识别 CMake、Android.mk、Application.mk、Gradle 与 Makefile。
 - 从构建声明和 include 中识别 SDL2、SDL2_image、SDL2_mixer、SDL2_net、SDL2_ttf。
 - 对 Native、Compatibility、Hybrid 三条路线提供可追溯的启发式评分。
+- 通过 `agpt plan` 生成仅供审阅的移植任务图，包含依赖顺序、验收条件、建议能力和人工审批关卡。
 - 可选调用用户自行安装的 Ghidra Headless，分析单个指定二进制并导出有上限的元数据。
 - 可选通过 Android NDK 构建 CMake 或 Android.mk 原生共享库，保存日志、ABI/API、哈希和构建来源。
 - 检查 Ghidra、Java、CMake、Android SDK/NDK、ADB、Wine、Box64 等工具。
@@ -39,6 +40,7 @@ AGPT 不是万能模拟器，也不承诺所有 PC 游戏都能一键转换。�
 
     agpt init ./projects/my-game --name "My Game" --source "/path/to/game"
     agpt analyze ./projects/my-game
+    agpt plan ./projects/my-game
     agpt doctor --json
 
     # Ghidra 元数据分析（需要单独安装 Ghidra）
@@ -49,6 +51,8 @@ AGPT 不是万能模拟器，也不承诺所有 PC 游戏都能一键转换。�
 
     # Android.mk 原生共享库构建（不是 APK）
     agpt ndk-build build ./jni --build-dir ./build/ndk-arm64 --abi arm64-v8a --api 21
+
+`agpt plan` 会将任务图写入项目目录的 `plans/port-task-graph.json`。它只生成计划，不执行任务、不修改游戏源码、不安装工具，也不会启动游戏；低置信度路线会要求人工选择。
 
 ## 安全边界
 

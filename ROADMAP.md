@@ -30,7 +30,8 @@
 - [ ] Test touch/input, audio, saves, rendering, and performance on real hardware
 
 ## v0.4.x — AI-assisted port workflow
-- [ ] Agent task graph with bounded permissions
+- [x] Deterministic plan-only task graph with dependencies, acceptance criteria, proposed capabilities, and approval gates
+- [ ] Agent task graph executor with bounded permissions
 - [ ] Human-reviewed patch proposals
 - [ ] Build/test/repair loop with hard budgets
 - [ ] Module-level native/hybrid boundary planner

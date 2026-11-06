@@ -16,10 +16,17 @@ Source directory
   -> PE/ELF and engine metadata probes
   -> route planner
   -> Port Project JSON/Markdown report
+  -> plan-only task graph with dependencies and approval gates
   -> optional Ghidra metadata export
   -> optional NDK/CMake native-library build
   -> explicit APK packaging and device/gameplay verification
 ```
+
+## Plan and execution boundary
+
+`build_task_graph` converts observed inventory and the route recommendation into a dependency-ordered plan. Each task declares acceptance criteria and proposed capabilities. Capabilities such as writing project files, executing a build, packaging an APK, installing an app, or launching a game are marked as requiring explicit approval.
+
+The current task graph is a planning artifact only. It does not grant capabilities or execute tasks; a future executor must enforce approvals, isolated workers, time/output budgets, and independent verification.
 
 ## External adapter boundaries
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — v0.4.x task planning preview
+
+- Add `agpt plan` to create a dependency-ordered Native, Compatibility, or Hybrid task graph with acceptance criteria and explicit human approval gates.
+- Keep task generation plan-only: no task executor is available, proposed capabilities are not granted, and no source mutation, build, package, install, or game launch occurs.
+
 ## 0.3.1 — Source-native reconnaissance and real NDK build (2026-11-06)
 
 - Add bounded, read-only source/build probes for C/C++, CMake, Android.mk, Application.mk, Gradle, and Makefile projects.

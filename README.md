@@ -22,6 +22,7 @@ This is **an upstream Android port used as a build/packaging reference, not an A
 - Scan bounded C/C++ source/header samples and recognize CMake, Android.mk, Application.mk, Gradle, and Makefile declarations.
 - Detect SDL2 and optional SDL2_image, SDL2_mixer, SDL2_net, and SDL2_ttf dependencies from build files and includes.
 - Compare native, compatibility, and hybrid routes using traceable heuristic evidence.
+- Generate a plan-only port task graph with dependencies, acceptance criteria, proposed capabilities, and approval gates via `agpt plan`.
 - Run Ghidra Headless for one user-selected binary and export bounded program metadata.
 - Build native shared libraries from CMake or Android.mk projects using a user-installed Android NDK; record logs, ABI/API, output hashes, and provenance.
 - Check optional tools including Ghidra, Java, CMake, Android SDK/NDK, ADB, Wine, and Box64.
@@ -39,6 +40,7 @@ Python 3.10+; no runtime third-party Python dependencies.
 
     agpt init ./projects/my-game --name "My Game" --source "/path/to/game"
     agpt analyze ./projects/my-game
+    agpt plan ./projects/my-game
     agpt doctor --json
 
     # Ghidra metadata analysis (requires separately installed Ghidra)
@@ -50,7 +52,7 @@ Python 3.10+; no runtime third-party Python dependencies.
     # Android.mk-based shared-library build (not an APK)
     agpt ndk-build build ./jni --build-dir ./build/game-ndk --abi arm64-v8a --api 21
 
-Analysis writes JSON and Markdown reports under the Port Project. Source game files remain untouched by reconnaissance.
+Analysis writes JSON and Markdown reports under the Port Project. `agpt plan` writes `plans/port-task-graph.json`; it does not execute tasks, modify game files, install tools, or launch a game. Source game files remain untouched by reconnaissance.
 
 ## Route model
 
