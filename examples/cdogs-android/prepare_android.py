@@ -30,6 +30,15 @@ def patch_cdogs_source(source: Path) -> None:
     if not expected_version:
         raise SystemExit("Refusing to patch an unexpected C-Dogs source version; expected 2.5.0")
 
+    # The upstream root CMakeLists assumes it is the top-level project.
+    # When added under the AGPT Android wrapper, CMAKE_SOURCE_DIR points at
+    # the wrapper; CMAKE_CURRENT_SOURCE_DIR continues to point at C-Dogs.
+    if "${CMAKE_SOURCE_DIR}" in cmake_root:
+        cmake_root = cmake_root.replace(
+            "${CMAKE_SOURCE_DIR}", "${CMAKE_CURRENT_SOURCE_DIR}"
+        )
+        (source / "CMakeLists.txt").write_text(cmake_root, encoding="utf-8")
+
     root_cmake = source / "CMakeLists.txt"
     replace_once(
         root_cmake,
