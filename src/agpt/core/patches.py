@@ -65,7 +65,7 @@ def create_patch_proposal(
     before_bytes = target.read_bytes()
     if len(before_bytes) > MAX_SOURCE_BYTES:
         raise PatchProposalError("source file exceeds the 1 MiB safety limit")
-    if b"\\x00" in before_bytes:
+    if b"\x00" in before_bytes:
         raise PatchProposalError("binary files cannot receive text patch proposals")
     try:
         before_text = before_bytes.decode("utf-8")
@@ -92,7 +92,7 @@ def create_patch_proposal(
     before_sha = _sha256(before_bytes)
     after_sha = _sha256(after_bytes)
     proposal_id = hashlib.sha256(
-        f"{relative_name}\0{before_sha}\\0{after_sha}\\0{rationale}".encode("utf-8")
+        f"{relative_name}|{before_sha}|{after_sha}|{rationale}".encode("utf-8")
     ).hexdigest()[:16]
     project = Path(project_root).expanduser().resolve()
     proposals_dir = project / "patches" / "proposals"
