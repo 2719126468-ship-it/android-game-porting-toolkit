@@ -47,6 +47,20 @@ class TaskGraphTests(unittest.TestCase):
             self.assertTrue(set(task["depends_on"]).issubset(seen), task["id"])
             seen.add(task["id"])
 
+    def test_compatibility_and_hybrid_task_graphs_are_topologically_ordered(self):
+        for route in ("compatibility", "hybrid"):
+            with self.subTest(route=route):
+                plan = build_task_graph(
+                    GameInventory(root=f"/games/{route}"),
+                    project_id=route,
+                    route_override=route,
+                )
+                seen = set()
+                for task in plan["tasks"]:
+                    self.assertTrue(set(task["depends_on"]).issubset(seen), task["id"])
+                    seen.add(task["id"])
+                self.assertTrue(plan["safety"]["plan_only"])
+
     def test_explicit_route_override_is_recorded_when_confidence_is_low(self):
         plan = build_task_graph(
             GameInventory(root="/games/unknown"),
@@ -76,6 +90,25 @@ class TaskGraphTests(unittest.TestCase):
             data = json.loads(path.read_text(encoding="utf-8"))
             self.assertFalse(data["execution_enabled"])
             self.assertEqual(data["plan_type"], "agpt-port-task-graph")
+            self.assertEqual(main(["plan", str(project)]), 2)
+            self.assertEqual(main(["plan", str(project), "--force"]), 0)
+
+    def test_cli_plan_refuses_output_inside_source_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "game"
+            source.mkdir()
+            project = root / "project"
+            self.assertEqual(
+                main(["init", str(project), "--name", "Demo", "--source", str(source)]),
+                0,
+            )
+            output = source / "must-not-write.json"
+            self.assertEqual(
+                main(["plan", str(project), "--output", str(output)]),
+                2,
+            )
+            self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":

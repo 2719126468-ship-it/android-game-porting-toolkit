@@ -37,6 +37,7 @@ def _parser() -> argparse.ArgumentParser:
     plan.add_argument("--route", choices=["auto", "native", "compatibility", "hybrid"], default=None,
                       help="override the project route preference")
     plan.add_argument("--output", help="optional task graph JSON output path")
+    plan.add_argument("--force", action="store_true", help="replace an existing plan file")
     plan.add_argument("--max-files", type=int, default=100_000)
 
     inspect = sub.add_parser("inspect", help="inspect a game directory without creating a project")
@@ -96,11 +97,25 @@ def main(argv: list[str] | None = None) -> int:
                 preferred_route=manifest.get("preferred_route", "auto"),
                 route_override=args.route,
             )
-            output_path = (
+            raw_output_path = (
                 Path(args.output).expanduser()
                 if args.output
                 else project_root / "plans" / "port-task-graph.json"
             )
+            if raw_output_path.is_symlink():
+                raise ValueError("Refusing to write a task plan through a symbolic link")
+            output_path = raw_output_path.resolve()
+            source_path = Path(manifest["source_path"]).expanduser().resolve()
+            try:
+                output_path.relative_to(source_path)
+            except ValueError:
+                pass
+            else:
+                raise ValueError("Task plan output must be outside the source game directory")
+            if output_path.exists() and not args.force:
+                raise FileExistsError(
+                    f"Task plan already exists: {output_path}; pass --force to replace it"
+                )
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(
                 json.dumps(task_plan, ensure_ascii=False, indent=2) + "\n",

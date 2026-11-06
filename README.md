@@ -41,6 +41,7 @@ Python 3.10+; no runtime third-party Python dependencies.
     agpt init ./projects/my-game --name "My Game" --source "/path/to/game"
     agpt analyze ./projects/my-game
     agpt plan ./projects/my-game
+    # add --force to replace an existing task plan
     agpt doctor --json
 
     # Ghidra metadata analysis (requires separately installed Ghidra)
@@ -52,7 +53,7 @@ Python 3.10+; no runtime third-party Python dependencies.
     # Android.mk-based shared-library build (not an APK)
     agpt ndk-build build ./jni --build-dir ./build/game-ndk --abi arm64-v8a --api 21
 
-Analysis writes JSON and Markdown reports under the Port Project. `agpt plan` writes `plans/port-task-graph.json`; it does not execute tasks, modify game files, install tools, or launch a game. Source game files remain untouched by reconnaissance.
+Analysis writes JSON and Markdown reports under the Port Project. `agpt plan` writes `plans/port-task-graph.json` without overwriting an existing plan unless `--force` is supplied; output inside the source game directory is rejected. It does not execute tasks, modify game files, install tools, or launch a game. Source game files remain untouched by reconnaissance.
 
 ## Route model
 

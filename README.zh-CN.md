@@ -41,6 +41,7 @@ AGPT 不是万能模拟器，也不承诺所有 PC 游戏都能一键转换。�
     agpt init ./projects/my-game --name "My Game" --source "/path/to/game"
     agpt analyze ./projects/my-game
     agpt plan ./projects/my-game
+    # 需要覆盖旧计划时显式加 --force
     agpt doctor --json
 
     # Ghidra 元数据分析（需要单独安装 Ghidra）
@@ -52,7 +53,7 @@ AGPT 不是万能模拟器，也不承诺所有 PC 游戏都能一键转换。�
     # Android.mk 原生共享库构建（不是 APK）
     agpt ndk-build build ./jni --build-dir ./build/ndk-arm64 --abi arm64-v8a --api 21
 
-`agpt plan` 会将任务图写入项目目录的 `plans/port-task-graph.json`。它只生成计划，不执行任务、不修改游戏源码、不安装工具，也不会启动游戏；低置信度路线会要求人工选择。
+`agpt plan` 会将任务图写入项目目录的 `plans/port-task-graph.json`；默认拒绝覆盖已有计划，只有显式添加 `--force` 才会替换，并且禁止把输出写进原游戏目录。它只生成计划，不执行任务、不修改游戏源码、不安装工具，也不会启动游戏；低置信度路线会要求人工选择。
 
 ## 安全边界
 
