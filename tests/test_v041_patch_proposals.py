@@ -99,7 +99,7 @@ class PatchProposalTests(unittest.TestCase):
             root = Path(tmp)
             source = root / "game"
             source.mkdir()
-            (source / "main.c").write_text("same\n", encoding="utf-8")
+            (source / "main.c").write_bytes(b"same\r\n")
             with self.assertRaises(PatchProposalError):
                 create_patch_proposal(
                     source, root / "project", file_path="main.c",

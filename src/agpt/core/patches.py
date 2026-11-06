@@ -72,7 +72,9 @@ def create_patch_proposal(
     except UnicodeDecodeError as exc:
         raise PatchProposalError("source file is not valid UTF-8 text") from exc
     after_bytes = replacement_text.encode("utf-8")
-    if before_bytes == after_bytes:
+    normalized_before = before_text.replace("\r\n", "\n").replace("\r", "\n")
+    normalized_after = replacement_text.replace("\r\n", "\n").replace("\r", "\n")
+    if normalized_before == normalized_after:
         raise PatchProposalError("replacement_text does not change the source file")
 
     relative_name = relative.as_posix()
