@@ -47,6 +47,7 @@ jobs:
       - name: Verify legacy project tool versions
         working-directory: vendor/DungeonRush_Android/DemoGame
         run: |
+          chmod +x ./gradlew
           grep -q 'com.android.tools.build:gradle:3.5.0' build.gradle
           grep -q 'gradle-5.6-all.zip' gradle/wrapper/gradle-wrapper.properties
           ./gradlew --version
