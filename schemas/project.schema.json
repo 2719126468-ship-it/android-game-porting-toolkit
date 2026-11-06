@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2719126468-ship-it/android-game-porting-toolkit/blob/main/schemas/project.schema.json",
+  "title": "AGPT Port Project Manifest",
+  "type": "object",
+  "required": ["schema_version", "project_id", "name", "source_path", "created_at", "target", "preferred_route"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "project_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "name": {"type": "string", "minLength": 1},
+    "source_path": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "preferred_route": {"type": "string", "enum": ["auto", "native", "compatibility", "hybrid"]},
+    "target": {
+      "type": "object",
+      "required": ["platform", "architectures", "min_sdk"],
+      "properties": {
+        "platform": {"type": "string", "const": "android"},
+        "architectures": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "min_sdk": {"type": "integer", "minimum": 23}
+      },
+      "additionalProperties": false
+    },
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": false
+}

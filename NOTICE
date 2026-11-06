@@ -1,0 +1,3 @@
+AGPT is an independent developer toolkit. It does not bundle Wine, Box64, FEX-Emu,
+Ghidra, DXVK, Android SDK/NDK, game engines, or commercial game assets. Integrations
+must respect each upstream project's license and the user's rights to the game files.
