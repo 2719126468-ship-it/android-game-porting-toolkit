@@ -25,7 +25,8 @@
 - [x] Android ndk-build adapter and Windows launcher support
 - [x] Real NDK 21.4.7075529 arm64-v8a/API 21 smoke build against a pinned DungeonRush Android project
 - [x] Eight native shared libraries verified and SHA-256 recorded
-- [ ] Package/install APK and test launch on an Android device
+- [x] Assemble the pinned upstream Android reference APK; verify manifest, min SDK, and both ARM ABIs (APK not published because bundled asset rights remain unresolved)
+- [ ] Install and launch the APK on an Android device or emulator
 - [ ] Test touch/input, audio, saves, rendering, and performance on real hardware
 
 ## v0.4.x — AI-assisted port workflow
