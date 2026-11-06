@@ -6,6 +6,12 @@ AGPT 不是万能模拟器，也不承诺所有 PC 游戏都能一键转换。�
 
 > v0.3.1 新增 C/C++ 源码与构建系统识别、SDL2 依赖探测、Android.mk/Application.mk 的 ABI/API 识别，以及可选 Android ndk-build 适配器。项目已通过真实 GitHub Actions ARM64 NDK 构建，样本为固定 commit 的 DungeonRush Android 参考工程。它仍然不执行导入的游戏、不绕过 DRM/反作弊、不解包受保护内容，也不会把“生成 .so”说成“游戏已可玩”。
 
+## 已验证的 Android 打包参考
+
+固定版本的上游 DungeonRush Android 参考工程已经通过可复现的旧版工具链完成 APK 构建，并通过 Manifest 与 ABI 检查：包名为 `org.libsdl.app`，最低 Android API 16，同时包含 `arm64-v8a` 和 `armeabi-v7a`，共 16 个原生共享库；APK 约 14.47 MiB。
+
+**这只是使用上游已有 Android 移植工程进行的构建/打包验证，不是 AGPT 自动生成的移植 APK。** 尚未进行模拟器或真机安装、启动和实际游戏测试。由于 APK 包含的部分第三方素材授权状态不明确，本项目没有公开发布该 APK。详见[完整验证记录](docs/testing/dungeonrush-android-reference.md)和 [GitHub Actions 构建记录](https://github.com/2719126468-ship-it/android-game-porting-toolkit/actions/runs/42228472437)。
+
 ## 当前能力
 
 - 创建独立 Port Project，不复制或修改原游戏目录。
