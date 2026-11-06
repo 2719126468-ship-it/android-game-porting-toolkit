@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from agpt.models import GameInventory, RouteScore
+from agpt.models import GameInventory
 from agpt.planner import score_routes
 
 _VALID_ROUTES = {"auto", "native", "compatibility", "hybrid"}
