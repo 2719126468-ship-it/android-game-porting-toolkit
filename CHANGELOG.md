@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — v0.4.x patch proposals and Android APK publishing
+
+- Add read-only unified-diff patch proposals with SHA-256 source baselines, evidence, file-size limits, and path/symlink traversal protection; no patch application or source mutation is enabled.
+- Add the original AGPT Orbit Snake SDL2 sample and an Android CI workflow that builds API 27+ ARMv7/ARM64 APKs, uploads CI artifacts, and supports tag-triggered GitHub Releases with license notices.
+
 ## Unreleased — v0.4.x task planning preview
 
 - Add `agpt plan` to create a dependency-ordered Native, Compatibility, or Hybrid task graph with acceptance criteria and explicit human approval gates.

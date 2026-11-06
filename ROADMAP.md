@@ -27,12 +27,12 @@
 - [x] Eight native shared libraries verified and SHA-256 recorded
 - [x] Assemble the pinned upstream Android reference APK; verify manifest, min SDK, and both ARM ABIs (APK not published because bundled asset rights remain unresolved)
 - [ ] Install and launch the APK on an Android device or emulator
-- [ ] Test touch/input, audio, saves, rendering, and performance on real hardware
+- [ ] Test touch/input, audio, saves, rendering, and performance on real hardware\n- [x] Build and publish an original, license-clear SDL2 Android sample APK through CI artifacts and tag-triggered Releases
 
 ## v0.4.x — AI-assisted port workflow
 - [x] Deterministic plan-only task graph with dependencies, acceptance criteria, proposed capabilities, and approval gates
 - [ ] Agent task graph executor with bounded permissions
-- [ ] Human-reviewed patch proposals
+- [x] Read-only unified-diff patch proposals with source hashes, evidence, bounded text input, and traversal/symlink protection\n- [ ] Human approval and controlled patch application
 - [ ] Build/test/repair loop with hard budgets
 - [ ] Module-level native/hybrid boundary planner
 - [ ] Checkpointing and resumable jobs

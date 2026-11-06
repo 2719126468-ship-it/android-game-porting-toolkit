@@ -6,6 +6,14 @@ AGPT is an orchestration and analysis toolkit—not a universal emulator and not
 
 > v0.3.1 adds bounded C/C++ source and build-system reconnaissance, SDL dependency detection, Android.mk/Application.mk ABI/API probes, and an opt-in Android `ndk-build` adapter. The project also has a real GitHub Actions ARM64 NDK smoke build against a pinned DungeonRush Android reference project. It still does not execute imported games, bypass DRM/anti-cheat, unpack protected content, or claim that a native library or APK is playable merely because it builds.
 
+## Downloadable Android sample APK
+
+The CI workflow builds an original asset-free SDL2 sample game for Android 8.1+ (API 27+), with both `armeabi-v7a` and `arm64-v8a` libraries. Each successful CI run uploads an installable debug APK and its verification report as a 90-day artifact. Pushing a tag named `orbit-snake-v0.1.0` publishes the verified APK and license notices to GitHub Releases.
+
+The sample is a reproducible packaging and SDL2 integration test, not proof that AGPT can automatically port arbitrary commercial PC games. It uses only original AGPT gameplay code plus SDL2 under its zlib license.
+
+[Open the APK CI workflow](https://github.com/2719126468-ship-it/android-game-porting-toolkit/actions/workflows/orbit-snake-apk.yml).
+
 ## Verified Android packaging reference
 
 The pinned upstream DungeonRush Android reference project now builds successfully with a reproducible legacy toolchain. The debug APK passed manifest and ABI checks: package `org.libsdl.app`, minimum API 16, `arm64-v8a` plus `armeabi-v7a`, and 16 native libraries total. The APK itself was about 14.47 MiB.
@@ -22,7 +30,7 @@ This is **an upstream Android port used as a build/packaging reference, not an A
 - Scan bounded C/C++ source/header samples and recognize CMake, Android.mk, Application.mk, Gradle, and Makefile declarations.
 - Detect SDL2 and optional SDL2_image, SDL2_mixer, SDL2_net, and SDL2_ttf dependencies from build files and includes.
 - Compare native, compatibility, and hybrid routes using traceable heuristic evidence.
-- Generate a plan-only port task graph with dependencies, acceptance criteria, proposed capabilities, and approval gates via `agpt plan`.
+- Generate a plan-only port task graph with dependencies, acceptance criteria, proposed capabilities, and approval gates via `agpt plan`.\n- Create human-reviewed unified-diff patch proposals with source hashes and strict read-only path validation via `agpt patch propose`.
 - Run Ghidra Headless for one user-selected binary and export bounded program metadata.
 - Build native shared libraries from CMake or Android.mk projects using a user-installed Android NDK; record logs, ABI/API, output hashes, and provenance.
 - Check optional tools including Ghidra, Java, CMake, Android SDK/NDK, ADB, Wine, and Box64.

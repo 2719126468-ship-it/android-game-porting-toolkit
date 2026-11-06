@@ -5,6 +5,7 @@ import json
 import sys
 from pathlib import Path
 
+from agpt.core.patches import PatchProposalError, create_patch_proposal
 from agpt.agents.scout import ScoutAgent
 from agpt.agents.task_graph import build_task_graph
 from agpt import __version__
@@ -39,6 +40,12 @@ def _parser() -> argparse.ArgumentParser:
     plan.add_argument("--output", help="optional task graph JSON output path")
     plan.add_argument("--force", action="store_true", help="replace an existing plan file")
     plan.add_argument("--max-files", type=int, default=100_000)
+
+    patch = sub.add_parser("patch", help="create human-reviewed source patch proposals")
+    patch_sub = patch.add_subparsers(dest="patch_command", required=True)
+    patch_propose = patch_sub.add_parser("propose", help="create a review-only unified diff")
+    patch_propose.add_argument("project_dir")
+    patch_propose.add_argument("spec", help="JSON file containing file, replacement_text, rationale and optional evidence")
 
     inspect = sub.add_parser("inspect", help="inspect a game directory without creating a project")
     inspect.add_argument("game_dir")
@@ -133,6 +140,36 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "execution_enabled": False,
                 "plan_path": str(output_path.resolve()),
+            })
+            return 0
+        if args.command == "patch" and args.patch_command == "propose":
+            manifest, project_root = load_project(args.project_dir)
+            spec_path = Path(args.spec).expanduser()
+            if spec_path.is_symlink() or not spec_path.is_file():
+                raise ValueError("patch specification must be a regular, non-symlink file")
+            if spec_path.stat().st_size > 1_048_576:
+                raise ValueError("patch specification exceeds the 1 MiB safety limit")
+            spec = json.loads(spec_path.read_text(encoding="utf-8"))
+            if not isinstance(spec, dict):
+                raise ValueError("patch specification must be a JSON object")
+            result = create_patch_proposal(
+                manifest["source_path"],
+                project_root,
+                file_path=spec.get("file"),
+                replacement_text=spec.get("replacement_text"),
+                rationale=spec.get("rationale"),
+                evidence=spec.get("evidence", []),
+            )
+            proposal = result["proposal"]
+            _print_json({
+                "success": True,
+                "proposal_id": proposal["proposal_id"],
+                "proposal_path": result["proposal_path"],
+                "target_file": proposal["target_file"],
+                "approval_required": proposal["approval_required"],
+                "applied": proposal["applied"],
+                "before_sha256": proposal["before_sha256"],
+                "after_sha256": proposal["after_sha256"],
             })
             return 0
         if args.command == "inspect":

@@ -6,6 +6,14 @@ AGPT 不是万能模拟器，也不承诺所有 PC 游戏都能一键转换。�
 
 > v0.3.1 新增 C/C++ 源码与构建系统识别、SDL2 依赖探测、Android.mk/Application.mk 的 ABI/API 识别，以及可选 Android ndk-build 适配器。项目已通过真实 GitHub Actions ARM64 NDK 构建，样本为固定 commit 的 DungeonRush Android 参考工程。它仍然不执行导入的游戏、不绕过 DRM/反作弊、不解包受保护内容，也不会把“生成 .so”说成“游戏已可玩”。
 
+## 可下载的 Android 示例 APK
+
+CI 会构建一个原创、无外部游戏素材的 SDL2 示例游戏，最低支持 Android 8.1（API 27），同时打包 `armeabi-v7a` 32 位 ARM 和 `arm64-v8a` 64 位 ARM。每次成功 CI 都会上传可安装的 Debug APK 与验证报告（保留 90 天）；推送 `orbit-snake-v0.1.0` 这种标签时，会把通过检查的 APK 和许可证说明发布到 GitHub Releases。
+
+该示例用于验证 SDL2 Android 集成和 APK 发布链路，并不代表 AGPT 已经能自动移植任意商业 PC 游戏。游戏逻辑为 AGPT 原创代码，SDL2 使用其 zlib 许可。
+
+[查看 APK CI 工作流](https://github.com/2719126468-ship-it/android-game-porting-toolkit/actions/workflows/orbit-snake-apk.yml)。
+
 ## 已验证的 Android 打包参考
 
 固定版本的上游 DungeonRush Android 参考工程已经通过可复现的旧版工具链完成 APK 构建，并通过 Manifest 与 ABI 检查：包名为 `org.libsdl.app`，最低 Android API 16，同时包含 `arm64-v8a` 和 `armeabi-v7a`，共 16 个原生共享库；APK 约 14.47 MiB。
@@ -22,7 +30,7 @@ AGPT 不是万能模拟器，也不承诺所有 PC 游戏都能一键转换。�
 - 有上限地扫描 C/C++ 源码和头文件，识别 CMake、Android.mk、Application.mk、Gradle 与 Makefile。
 - 从构建声明和 include 中识别 SDL2、SDL2_image、SDL2_mixer、SDL2_net、SDL2_ttf。
 - 对 Native、Compatibility、Hybrid 三条路线提供可追溯的启发式评分。
-- 通过 `agpt plan` 生成仅供审阅的移植任务图，包含依赖顺序、验收条件、建议能力和人工审批关卡。
+- 通过 `agpt plan` 生成仅供审阅的移植任务图，包含依赖顺序、验收条件、建议能力和人工审批关卡。\n- 通过 `agpt patch propose` 生成带源文件哈希和统一 diff 的人工审核补丁提案，严格只读，不修改原游戏源码。
 - 可选调用用户自行安装的 Ghidra Headless，分析单个指定二进制并导出有上限的元数据。
 - 可选通过 Android NDK 构建 CMake 或 Android.mk 原生共享库，保存日志、ABI/API、哈希和构建来源。
 - 检查 Ghidra、Java、CMake、Android SDK/NDK、ADB、Wine、Box64 等工具。
