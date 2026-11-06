@@ -16,6 +16,7 @@ MAX_SOURCE_BYTES = 1024 * 1024
 MAX_DIFF_BYTES = 256 * 1024
 MAX_PROPOSAL_BYTES = 2 * MAX_SOURCE_BYTES + 2 * MAX_DIFF_BYTES + 64 * 1024
 PROPOSAL_ID_RE = re.compile(r"^[0-9a-f]{16}$")
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 class PatchProposalError(ValueError):
@@ -243,8 +244,15 @@ def apply_patch_proposal(
     rationale = proposal.get("rationale")
     before_sha = proposal.get("before_sha256")
     after_sha = proposal.get("after_sha256")
-    if not isinstance(target_file, str) or not isinstance(rationale, str):
-        raise PatchProposalError("proposal target or rationale is invalid")
+    if (
+        not isinstance(target_file, str)
+        or not isinstance(rationale, str)
+        or not isinstance(before_sha, str)
+        or not SHA256_RE.fullmatch(before_sha)
+        or not isinstance(after_sha, str)
+        or not SHA256_RE.fullmatch(after_sha)
+    ):
+        raise PatchProposalError("proposal target, rationale, or source hashes are invalid")
     expected_id = hashlib.sha256(
         f"{target_file}|{before_sha}|{after_sha}|{rationale}".encode("utf-8")
     ).hexdigest()[:16]
