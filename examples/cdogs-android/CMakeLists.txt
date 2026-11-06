@@ -20,6 +20,11 @@ set(SDL2_DISABLE_SDL2MAIN ON CACHE BOOL "Use the SDL Android entry point" FORCE)
 set(SDL_INSTALL OFF CACHE BOOL "Do not install SDL2 in the Android build" FORCE)
 add_subdirectory("${AGPT_SDL2_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/agpt-sdl2")
 
+# WavPack's feature probe finds fseeko at link time, but Bionic only
+# declares fseeko/ftello for API 24+. Keep minSdk 21 by using the portable
+# fseek/ftell path (game audio assets are far below the 2 GiB seek limit).
+set(HAVE_FSEEKO OFF CACHE BOOL "Use Bionic API-21 compatible stdio seeking" FORCE)
+
 set(SDL2MIXER_BUILD_SHARED_LIBS ON CACHE BOOL "Build SDL2_mixer shared library" FORCE)
 set(SDL2MIXER_VENDORED ON CACHE BOOL "Use vendored SDL_mixer codecs" FORCE)
 set(SDL2MIXER_DEPS_SHARED OFF CACHE BOOL "Link codec dependencies statically" FORCE)
