@@ -199,6 +199,32 @@ class PatchProposalTests(unittest.TestCase):
             with self.assertRaises(PatchProposalError):
                 apply_patch_proposal(source, project, "../outside", approve=True)
 
+    def test_rejects_tampered_proposal_target_metadata(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "game"
+            project = root / "project"
+            source.mkdir()
+            project.mkdir()
+            (source / "main.c").write_text("before\\n", encoding="utf-8")
+            (source / "other.c").write_text("before\\n", encoding="utf-8")
+            result = create_patch_proposal(
+                source, project,
+                file_path="main.c",
+                replacement_text="after\\n",
+                rationale="Metadata tamper test.",
+            )
+            proposal_path = Path(result["proposal_path"])
+            proposal = json.loads(proposal_path.read_text(encoding="utf-8"))
+            proposal["target_file"] = "other.c"
+            proposal_path.write_text(json.dumps(proposal), encoding="utf-8")
+            with self.assertRaises(PatchProposalError):
+                apply_patch_proposal(
+                    source, project, result["proposal"]["proposal_id"], approve=True
+                )
+            self.assertEqual((source / "main.c").read_text(encoding="utf-8"), "before\\n")
+            self.assertEqual((source / "other.c").read_text(encoding="utf-8"), "before\\n")
+
 
 if __name__ == "__main__":
     unittest.main()
