@@ -225,6 +225,31 @@ class PatchProposalTests(unittest.TestCase):
             self.assertEqual((source / "main.c").read_text(encoding="utf-8"), "before\\n")
             self.assertEqual((source / "other.c").read_text(encoding="utf-8"), "before\\n")
 
+    def test_rejects_tampered_review_diff(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "game"
+            project = root / "project"
+            source.mkdir()
+            project.mkdir()
+            target = source / "main.c"
+            target.write_text("before\\n", encoding="utf-8")
+            result = create_patch_proposal(
+                source, project,
+                file_path="main.c",
+                replacement_text="after\\n",
+                rationale="Diff tamper test.",
+            )
+            proposal_path = Path(result["proposal_path"])
+            proposal = json.loads(proposal_path.read_text(encoding="utf-8"))
+            proposal["unified_diff"] = "This is not the actual patch."
+            proposal_path.write_text(json.dumps(proposal), encoding="utf-8")
+            with self.assertRaises(PatchProposalError):
+                apply_patch_proposal(
+                    source, project, result["proposal"]["proposal_id"], approve=True
+                )
+            self.assertEqual(target.read_text(encoding="utf-8"), "before\\n")
+
 
 if __name__ == "__main__":
     unittest.main()
