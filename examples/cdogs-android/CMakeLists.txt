@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 project(agpt_cdogs_android LANGUAGES C)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 if(NOT ANDROID)
     message(FATAL_ERROR "This CMake wrapper must be configured with the Android NDK toolchain")
 endif()
