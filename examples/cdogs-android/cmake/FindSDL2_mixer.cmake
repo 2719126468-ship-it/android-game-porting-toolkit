@@ -1,0 +1,10 @@
+# FindSDL2_mixer.cmake - target-aware SDL_mixer resolver for the pinned AGPT build.
+if(TARGET SDL2_mixer::SDL2_mixer)
+    set(SDL2_mixer_FOUND TRUE)
+    set(SDL2_MIXER_FOUND TRUE)
+    set(SDL2_MIXER_INCLUDE_DIRS "\${AGPT_SDL2_MIXER_SOURCE_DIR}/include")
+    set(SDL2_MIXER_LIBRARIES SDL2_mixer::SDL2_mixer)
+else()
+    set(SDL2_mixer_FOUND FALSE)
+    set(SDL2_MIXER_FOUND FALSE)
+endif()
