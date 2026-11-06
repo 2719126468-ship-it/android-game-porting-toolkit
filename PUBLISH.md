@@ -1,19 +1,12 @@
-# Publishing this prepared repository to GitHub
+# Repository publication status
 
-The source tree is ready for its first push. The connected GitHub action set in this session supports reading and writing files/commits to an existing repository, but does not expose the GitHub `Create repository` API. The repository therefore has not been created or pushed by AGPT automation.
+The AGPT v0.1.0 foundation has been published to this repository.
 
-Create an **empty** repository named `android-game-porting-toolkit` under `2719126468-ship-it` on GitHub (do not initialize it with a README, license, or `.gitignore`), then run from this directory:
+- Default branch: `main`
+- Initial foundation commit: `4b75e27a229967b889ff3b1c5327834a114f62e3`
+- Published source files: 45
+- Local test result before publication: 19 tests passed
 
-```bash
-git remote add origin git@github.com:2719126468-ship-it/android-game-porting-toolkit.git
-git push -u origin main
-```
+The GitHub Actions workflow is defined at `.github/workflows/ci.yml`. Check the repository's **Actions → CI** page for the hosted run status. Local verification and hosted CI are separate checks.
 
-HTTPS alternative:
-
-```bash
-git remote add origin https://github.com/2719126468-ship-it/android-game-porting-toolkit.git
-git push -u origin main
-```
-
-Do not add commercial game files or assets to the repository. See `.gitignore` and `SECURITY.md`.
+Do not commit commercial game binaries, proprietary assets, save files, credentials, license tokens, or generated APKs. See `.gitignore` and `SECURITY.md`.
