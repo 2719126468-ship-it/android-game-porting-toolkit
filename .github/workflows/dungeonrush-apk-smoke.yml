@@ -2,6 +2,9 @@ name: DungeonRush APK packaging smoke
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/dungeonrush-apk-smoke.yml"
 
 permissions:
   contents: read
