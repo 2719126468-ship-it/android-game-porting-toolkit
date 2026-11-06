@@ -84,7 +84,7 @@ jobs:
           echo "AGPT_CDOGS_SOURCE_DIR=$GITHUB_WORKSPACE/vendor/cdogs" >> "$GITHUB_ENV"
           echo "AGPT_SDL2_SOURCE_DIR=$GITHUB_WORKSPACE/vendor/SDL2" >> "$GITHUB_ENV"
           echo "AGPT_SDL2_MIXER_SOURCE_DIR=$GITHUB_WORKSPACE/vendor/SDL2_mixer" >> "$GITHUB_ENV"
-          test -f build/cdogs-android/app/src/main/assets/data/ammo.json
+          test -f build/cdogs-android/app/src/main/assets/graphics/font.png
           test -f build/cdogs-android/app/src/main/java/com/agpt/cdogs/CdogsActivity.java
 
       - name: Verify pinned Android project configuration
