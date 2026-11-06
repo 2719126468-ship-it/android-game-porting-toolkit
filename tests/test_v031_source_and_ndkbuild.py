@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -67,8 +68,10 @@ class NdkBuildAdapterTests(unittest.TestCase):
         (ndk / "build" / "cmake").mkdir(parents=True)
         (ndk / "build" / "cmake" / "android.toolchain.cmake").write_text("# test")
         (ndk / "source.properties").write_text("Pkg.Revision = 21.4.7075529\n")
-        (ndk / "ndk-build").write_text("#!/bin/sh\nexit 0\n")
-        (ndk / "ndk-build").chmod(0o755)
+        launcher = ndk / ("ndk-build.cmd" if os.name == "nt" else "ndk-build")
+        launcher.write_text("@echo off\r\nexit /b 0\r\n" if os.name == "nt" else "#!/bin/sh\nexit 0\n")
+        if os.name != "nt":
+            launcher.chmod(0o755)
         source = root / "jni"
         source.mkdir()
         (source / "Android.mk").write_text("include $(call all-subdir-makefiles)\n")
