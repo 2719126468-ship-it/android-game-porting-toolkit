@@ -12,6 +12,8 @@ def score_routes(inventory: GameInventory) -> tuple[list[RouteScore], str, str]:
 
     engines = {item.value for item in inventory.evidence if item.category == "engine"}
     apis = {item.value for item in inventory.evidence if item.category == "graphics_or_input_api"}
+    source_languages = {item.value for item in inventory.evidence if item.category == "source_language"}
+    build_systems = {item.value for item in inventory.evidence if item.category == "build_system"}
     kinds = Counter(record.kind for record in inventory.records)
     architectures = Counter(record.architecture for record in inventory.records if record.architecture)
 
