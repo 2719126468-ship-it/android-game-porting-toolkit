@@ -104,6 +104,17 @@ def patch_cdogs_source(source: Path) -> None:
         "Android SDL subsystem flags",
     )
 
+    # The bundled ENet CMakeLists only uses pre-3.24 commands/policies;
+    # its 3.24 minimum is newer than the CMake version shipped by this runner.
+    # Apply a narrow Android-only minimum-version compatibility adjustment.
+    enet_cmake = source / "src" / "cdogs" / "enet" / "CMakeLists.txt"
+    replace_once(
+        enet_cmake,
+        "cmake_minimum_required(VERSION 3.24)",
+        "cmake_minimum_required(VERSION 3.22)",
+        "Android ENet CMake minimum version",
+    )
+
     src_cmake = source / "src" / "CMakeLists.txt"
     replace_once(
         src_cmake,
