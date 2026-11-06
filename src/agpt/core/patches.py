@@ -14,7 +14,7 @@ from typing import Any
 
 MAX_SOURCE_BYTES = 1024 * 1024
 MAX_DIFF_BYTES = 256 * 1024
-MAX_PROPOSAL_BYTES = MAX_SOURCE_BYTES + MAX_DIFF_BYTES + 64 * 1024
+MAX_PROPOSAL_BYTES = 2 * MAX_SOURCE_BYTES + 2 * MAX_DIFF_BYTES + 64 * 1024
 PROPOSAL_ID_RE = re.compile(r"^[0-9a-f]{16}$")
 
 
@@ -147,14 +147,19 @@ def create_patch_proposal(
 
     before_sha = _sha256(before_bytes)
     after_sha = _sha256(after_bytes)
+    normalized_rationale = rationale.strip()
     proposal_id = hashlib.sha256(
-        f"{relative_name}|{before_sha}|{after_sha}|{rationale}".encode("utf-8")
+        f"{relative_name}|{before_sha}|{after_sha}|{normalized_rationale}".encode("utf-8")
     ).hexdigest()[:16]
-    project = Path(project_root).expanduser().resolve()
-    proposals_dir = project / "patches" / "proposals"
-    proposals_dir.mkdir(parents=True, exist_ok=True)
-    if (project / "patches").is_symlink() or proposals_dir.is_symlink():
+    project = Path(project_root).expanduser().resolve(strict=True)
+    if not project.is_dir():
+        raise PatchProposalError("project_root must be a directory")
+    patches_dir = project / "patches"
+    proposals_dir = patches_dir / "proposals"
+    if patches_dir.is_symlink() or proposals_dir.is_symlink():
         raise PatchProposalError("proposal directories must not be symbolic links")
+    patches_dir.mkdir(exist_ok=True)
+    proposals_dir.mkdir(exist_ok=True)
     proposal_path = proposals_dir / f"{proposal_id}.json"
     if proposal_path.exists() or proposal_path.is_symlink():
         raise FileExistsError(f"patch proposal already exists: {proposal_path}")
@@ -168,7 +173,7 @@ def create_patch_proposal(
         "before_sha256": before_sha,
         "after_sha256": after_sha,
         "source_file_bytes": len(before_bytes),
-        "rationale": rationale.strip(),
+        "rationale": normalized_rationale,
         "evidence": evidence_items,
         "replacement_text": replacement_text,
         "unified_diff": diff,
@@ -233,6 +238,18 @@ def apply_patch_proposal(
     safety = proposal.get("safety")
     if not isinstance(safety, dict) or safety.get("review_only") is not True:
         raise PatchProposalError("proposal safety metadata is invalid")
+
+    target_file = proposal.get("target_file")
+    rationale = proposal.get("rationale")
+    before_sha = proposal.get("before_sha256")
+    after_sha = proposal.get("after_sha256")
+    if not isinstance(target_file, str) or not isinstance(rationale, str):
+        raise PatchProposalError("proposal target or rationale is invalid")
+    expected_id = hashlib.sha256(
+        f"{target_file}|{before_sha}|{after_sha}|{rationale}".encode("utf-8")
+    ).hexdigest()[:16]
+    if expected_id != proposal_id:
+        raise PatchProposalError("proposal metadata does not match its ID")
 
     target_file = proposal.get("target_file")
     target = _resolve_patch_target(root, target_file)
