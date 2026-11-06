@@ -120,22 +120,22 @@ class PatchProposalTests(unittest.TestCase):
             source.mkdir()
             project.mkdir()
             target = source / "main.c"
-            target.write_text("int main(void) { return 0; }\\n", encoding="utf-8")
+            target.write_text("int main(void) { return 0; }\n", encoding="utf-8")
             result = create_patch_proposal(
                 source, project,
                 file_path="main.c",
-                replacement_text="int main(void) { return 1; }\\n",
+                replacement_text="int main(void) { return 1; }\n",
                 rationale="Change the sample return value.",
             )
             proposal_id = result["proposal"]["proposal_id"]
             with self.assertRaises(PatchProposalError):
                 apply_patch_proposal(source, project, proposal_id)
-            self.assertEqual(target.read_text(encoding="utf-8"), "int main(void) { return 0; }\\n")
+            self.assertEqual(target.read_text(encoding="utf-8"), "int main(void) { return 0; }\n")
 
             applied = apply_patch_proposal(source, project, proposal_id, approve=True)
             self.assertTrue(applied["approved"])
             self.assertTrue(applied["applied"])
-            self.assertEqual(target.read_text(encoding="utf-8"), "int main(void) { return 1; }\\n")
+            self.assertEqual(target.read_text(encoding="utf-8"), "int main(void) { return 1; }\n")
             proposal = json.loads(Path(result["proposal_path"]).read_text(encoding="utf-8"))
             self.assertEqual(proposal["status"], "applied")
             self.assertTrue(proposal["safety"]["source_tree_modified"])
@@ -150,19 +150,19 @@ class PatchProposalTests(unittest.TestCase):
             source.mkdir()
             project.mkdir()
             target = source / "main.c"
-            target.write_text("original\\n", encoding="utf-8")
+            target.write_text("original\n", encoding="utf-8")
             result = create_patch_proposal(
                 source, project,
                 file_path="main.c",
-                replacement_text="proposed\\n",
+                replacement_text="proposed\n",
                 rationale="Stale-source test.",
             )
-            target.write_text("changed after proposal\\n", encoding="utf-8")
+            target.write_text("changed after proposal\n", encoding="utf-8")
             with self.assertRaises(PatchProposalError):
                 apply_patch_proposal(
                     source, project, result["proposal"]["proposal_id"], approve=True
                 )
-            self.assertEqual(target.read_text(encoding="utf-8"), "changed after proposal\\n")
+            self.assertEqual(target.read_text(encoding="utf-8"), "changed after proposal\n")
 
     def test_rejects_tampered_replacement_content(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -172,22 +172,22 @@ class PatchProposalTests(unittest.TestCase):
             source.mkdir()
             project.mkdir()
             target = source / "main.c"
-            target.write_text("before\\n", encoding="utf-8")
+            target.write_text("before\n", encoding="utf-8")
             result = create_patch_proposal(
                 source, project,
                 file_path="main.c",
-                replacement_text="after\\n",
+                replacement_text="after\n",
                 rationale="Tamper test.",
             )
             proposal_path = Path(result["proposal_path"])
             proposal = json.loads(proposal_path.read_text(encoding="utf-8"))
-            proposal["replacement_text"] = "tampered\\n"
+            proposal["replacement_text"] = "tampered\n"
             proposal_path.write_text(json.dumps(proposal), encoding="utf-8")
             with self.assertRaises(PatchProposalError):
                 apply_patch_proposal(
                     source, project, result["proposal"]["proposal_id"], approve=True
                 )
-            self.assertEqual(target.read_text(encoding="utf-8"), "before\\n")
+            self.assertEqual(target.read_text(encoding="utf-8"), "before\n")
 
     def test_rejects_proposal_id_path_traversal(self):
         with tempfile.TemporaryDirectory() as tmp:
