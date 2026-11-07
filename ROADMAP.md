@@ -27,13 +27,16 @@
 - [x] Eight native shared libraries verified and SHA-256 recorded
 - [x] Assemble the pinned upstream Android reference APK; verify manifest, min SDK, and both ARM ABIs (APK not published because bundled asset rights remain unresolved)
 - [ ] Install and launch the APK on an Android device or emulator
-- [ ] Test touch/input, audio, saves, rendering, and performance on real hardware\n- [x] Build and publish an original, license-clear SDL2 Android sample APK through CI artifacts and tag-triggered Releases
+- [ ] Test touch/input, audio, saves, rendering, and performance on real hardware
+- [x] Build and publish an original, license-clear SDL2 Android sample APK through CI artifacts and tag-triggered Releases
 
 ## v0.4.x — AI-assisted port workflow
-- [ ] End-to-end Android port validation against pinned C-Dogs SDL 2.5.0 source (see docs/testing/cdogs-sdl-2.5.0.md)
+- [x] Build pinned C-Dogs SDL 2.5.0 Android debug APK for armeabi-v7a and arm64-v8a; verify APK manifest, native libraries and debug signature in GitHub Actions
+- [ ] Install and launch the C-Dogs APK on an Android device or emulator; test touch/input, audio, saves, rendering and performance (see docs/testing/cdogs-sdl-2.5.0.md)
 - [x] Deterministic plan-only task graph with dependencies, acceptance criteria, proposed capabilities, and approval gates
 - [ ] Agent task graph executor with bounded permissions
-- [x] Read-only unified-diff patch proposals with source hashes, evidence, bounded text input, and traversal/symlink protection\n- [ ] Human approval and controlled patch application
+- [x] Read-only unified-diff patch proposals with source hashes, evidence, bounded text input, and traversal/symlink protection
+- [x] Human approval and controlled patch application
 - [ ] Build/test/repair loop with hard budgets
 - [ ] Module-level native/hybrid boundary planner
 - [ ] Checkpointing and resumable jobs
