@@ -1,0 +1,207 @@
+name: C-Dogs SDL Android APK
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "examples/cdogs-android/**"
+      - ".github/workflows/cdogs-sdl-android.yml"
+  push:
+    branches: [main]
+    paths:
+      - "examples/cdogs-android/**"
+      - ".github/workflows/cdogs-sdl-android.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-cdogs-apk:
+    name: Build C-Dogs SDL 2.5.0 (ARMv7 + ARM64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout AGPT integration
+        uses: actions/checkout@v7.0.1
+        with:
+          path: agpt
+
+      - name: Checkout pinned C-Dogs SDL
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: cxong/cdogs-sdl
+          ref: "2.5.0"
+          path: vendor/cdogs
+
+      - name: Checkout pinned SDL2
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: libsdl-org/SDL
+          ref: release-2.32.10
+          path: vendor/SDL2
+
+      - name: Checkout pinned SDL_mixer
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: libsdl-org/SDL_mixer
+          ref: release-2.8.1
+          path: vendor/SDL2_mixer
+
+      - name: Populate SDL_mixer vendored codec projects
+        working-directory: vendor/SDL2_mixer
+        run: |
+          rm -rf \
+            external/flac external/ogg external/vorbis external/opus \
+            external/opusfile external/tremor external/mpg123 \
+            external/libxmp external/wavpack external/libgme
+          sh external/download.sh --depth 1
+          test -f external/ogg/CMakeLists.txt
+          test -f external/flac/CMakeLists.txt
+          test -f external/opus/CMakeLists.txt
+          test -f external/libxmp/CMakeLists.txt
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install pinned Android toolchain
+        run: |
+          sdkmanager --install \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "ndk;28.2.13676358" \
+            "cmake;3.22.1"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/28.2.13676358" >> "$GITHUB_ENV"
+          test -x "$ANDROID_SDK_ROOT/ndk/28.2.13676358/ndk-build"
+
+      - name: Install protoc and Python protobuf
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "23.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate Android preparation script syntax
+        run: python -m py_compile agpt/examples/cdogs-android/prepare_android.py
+
+      - name: Install nanopb generator runtime
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install 'protobuf>=4.21,<5'
+          protoc --version
+          python -c "import google.protobuf; print(google.protobuf.__version__)"
+
+      - name: Prepare C-Dogs Android project
+        run: |
+          python agpt/examples/cdogs-android/prepare_android.py \
+            --cdogs-source vendor/cdogs \
+            --sdl-source vendor/SDL2 \
+            --output "$GITHUB_WORKSPACE/build/cdogs-android"
+          echo "AGPT_CDOGS_SOURCE_DIR=$GITHUB_WORKSPACE/vendor/cdogs" >> "$GITHUB_ENV"
+          echo "AGPT_SDL2_SOURCE_DIR=$GITHUB_WORKSPACE/vendor/SDL2" >> "$GITHUB_ENV"
+          echo "AGPT_SDL2_MIXER_SOURCE_DIR=$GITHUB_WORKSPACE/vendor/SDL2_mixer" >> "$GITHUB_ENV"
+          test -d build/cdogs-android/app/src/main/assets/data
+          test -d build/cdogs-android/app/src/main/assets/graphics
+          test -d build/cdogs-android/app/src/main/assets/missions
+          test -f build/cdogs-android/app/src/main/java/com/agpt/cdogs/CdogsActivity.java
+
+      - name: Verify pinned Android project configuration
+        working-directory: build/cdogs-android
+        run: |
+          grep -E 'compileSdkVersion|minSdkVersion|targetSdkVersion|ndkVersion' app/build.gradle
+          grep -F 'SDL2_mixer' app/src/main/java/com/agpt/cdogs/CdogsActivity.java
+          grep -F 'set_target_properties(cdogs-sdl PROPERTIES OUTPUT_NAME main)' "$AGPT_CDOGS_SOURCE_DIR/src/CMakeLists.txt"
+          grep -F 'add_library(cdogs-sdl SHARED' "$AGPT_CDOGS_SOURCE_DIR/src/CMakeLists.txt"
+          grep -F 'cmake_minimum_required(VERSION 3.22)' "$AGPT_CDOGS_SOURCE_DIR/src/cdogs/enet/CMakeLists.txt"
+
+      - name: Build debug APK
+        working-directory: build/cdogs-android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Verify APK package, signature and native libraries
+        working-directory: build/cdogs-android
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          AAPT="$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt"
+          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner"
+          "$AAPT" dump badging "$APK" | tee "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
+          grep -F "package: name='com.agpt.cdogs'" "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
+          grep -F "sdkVersion:'21'" "$GITHUB_WORKSPACE/dist/manifest-badging.txt"
+          unzip -Z1 "$APK" | sort > "$GITHUB_WORKSPACE/dist/apk-contents.txt"
+          for abi in armeabi-v7a arm64-v8a; do
+            grep -Fx "lib/$abi/libmain.so" "$GITHUB_WORKSPACE/dist/apk-contents.txt"
+            grep -Fx "lib/$abi/libSDL2.so" "$GITHUB_WORKSPACE/dist/apk-contents.txt"
+            grep -Fx "lib/$abi/libSDL2_mixer.so" "$GITHUB_WORKSPACE/dist/apk-contents.txt"
+          done
+          "$APKSIGNER" verify --verbose "$APK"
+          cp "$APK" "$GITHUB_WORKSPACE/dist/agpt-cdogs-sdl-2.5.0-arm32-arm64-debug.apk"
+          cp "$AGPT_CDOGS_SOURCE_DIR/COPYING" "$GITHUB_WORKSPACE/dist/C-Dogs-GPL-COPYING.txt"
+          cp "$AGPT_CDOGS_SOURCE_DIR/doc/README_DATA.md" "$GITHUB_WORKSPACE/dist/C-Dogs-asset-licenses.txt"
+          cp "$AGPT_CDOGS_SOURCE_DIR/doc/COPYING.SDL2.txt" "$GITHUB_WORKSPACE/dist/C-Dogs-SDL2-third-party-license.txt"
+          cp "$AGPT_CDOGS_SOURCE_DIR/doc/LICENSE.enet.txt" "$GITHUB_WORKSPACE/dist/C-Dogs-ENet-third-party-license.txt"
+          cp "$AGPT_SDL2_SOURCE_DIR/LICENSE.txt" "$GITHUB_WORKSPACE/dist/SDL2-zlib-license.txt"
+          cp "$AGPT_SDL2_MIXER_SOURCE_DIR/LICENSE.txt" "$GITHUB_WORKSPACE/dist/SDL2-mixer-zlib-license.txt"
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          dist = Path(os.environ["GITHUB_WORKSPACE"]) / "dist"
+          apk = dist / "agpt-cdogs-sdl-2.5.0-arm32-arm64-debug.apk"
+          report = {
+              "status": "apk_built_and_verified",
+              "application_id": "com.agpt.cdogs",
+              "game": "C-Dogs SDL",
+              "game_version": "2.5.0",
+              "min_sdk": 21,
+              "target_sdk": 35,
+              "ndk": "28.2.13676358",
+              "abis": ["armeabi-v7a", "arm64-v8a"],
+              "sdl2": "2.32.10",
+              "sdl2_mixer": "2.8.1",
+              "apk_filename": apk.name,
+              "apk_size_bytes": apk.stat().st_size,
+              "apk_sha256": hashlib.sha256(apk.read_bytes()).hexdigest(),
+              "source": "official upstream tags; Android wrapper and adaptation maintained by AGPT",
+              "license_summary": "GPL-2.0-or-later and BSD-2-Clause code; preserve CC0/CC-BY/CC-BY-SA asset notices",
+              "device_install_tested": False,
+              "gameplay_tested": False
+          }
+          (dist / "build-report.json").write_text(
+              json.dumps(report, indent=2) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(report, indent=2))
+          PY
+
+      - name: Upload APK and build evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: agpt-cdogs-sdl-2.5.0-android-armv7-arm64
+          path: |
+            dist/agpt-cdogs-sdl-2.5.0-arm32-arm64-debug.apk
+            dist/C-Dogs-GPL-COPYING.txt
+            dist/C-Dogs-asset-licenses.txt
+            dist/C-Dogs-SDL2-third-party-license.txt
+            dist/C-Dogs-ENet-third-party-license.txt
+            dist/SDL2-zlib-license.txt
+            dist/SDL2-mixer-zlib-license.txt
+            dist/build-report.json
+            dist/manifest-badging.txt
+            dist/apk-contents.txt
+          if-no-files-found: error
+          retention-days: 90
