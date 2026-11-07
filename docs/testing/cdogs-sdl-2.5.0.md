@@ -69,3 +69,18 @@ The preparation script makes narrow, version-checked source edits: preserve SDL'
 The Android Activity extracts bundled files into private app storage on first launch without overwriting existing files, and exposes touch buttons mapped to the game's default keyboard bindings. The build workflow checks the package ID, min SDK, per-ABI libSDL2.so, libSDL2_mixer.so, and libmain.so, and verifies the debug signature before uploading an artifact.
 
 **Status rule:** a successful APK build is only a packaging result. It is not a successful launch or gameplay test. The workflow report keeps device_install_tested and gameplay_tested false until those checks are actually performed on hardware.
+
+
+## First CI build result
+
+The AGPT Android integration was merged to `main` in PR #2 after the following GitHub Actions run completed successfully:
+
+- Run: https://github.com/2719126468-ship-it/android-game-porting-toolkit/actions/runs/42269913657
+- Artifact: `agpt-cdogs-sdl-2.5.0-android-armv7-arm64`
+- APK package: `com.agpt.cdogs`, version `2.5.0-agpt1`
+- Minimum / target API: 21 / 35
+- ABIs: `armeabi-v7a`, `arm64-v8a`
+- Native payloads and APK debug signature: verified by CI
+- APK SHA-256: `bedd29a9a781f36b5b7f29db5bbdd1b65e12de50038d3257b14295011acec264`
+
+This result proves successful packaging and artifact validation only. Device installation and actual mission/gameplay testing remain outstanding.
